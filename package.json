@@ -1,0 +1,33 @@
+{
+  "name": "camvillage-server",
+  "version": "1.0.0",
+  "description": "CamVillage Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codestates/camvillage-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "sequelize": "^6.3.5",
+    "sequelize-cli": "^6.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "nodemon": "^2.0.6"
+  },
+  "bugs": {
+    "url": "https://github.com/codestates/camvillage-server/issues"
+  },
+  "homepage": "https://github.com/codestates/camvillage-server#readme"
+}
