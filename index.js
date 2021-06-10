@@ -8,6 +8,7 @@ const userRouter = require('./routes/user');
 const itemRouter = require('./routes/item');
 const controller = require('./controllers/others');
 
+
 require("./models");
 const sequelize = require('./models').sequelize;
 const app = express();
@@ -15,19 +16,22 @@ const app = express();
 sequelize.sync();
 const port = 4000;
 
-app.use('/', indexRouter);
-app.use('/user', userRouter);
-app.use('/item', itemRouter);
-app.get('/main', controller.mainpageController);
-app.get('/search', controller.searchController);
-
-app.use(express.json());
+//라우팅 뒤에 있었는데 앞으로 끌고 왔습니다
+//express 미들웨어가 라우팅보다 와야 라우팅에서 적용됨
+app.use(express.json()); //req.body 접근하게 해주는 미들웨어
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
   origin: 'https://localhost:3000',
   methods: ['GET, POST, OPTIONS'],
   credentials: true
 }));
+
+app.use('/', indexRouter);
+app.use('/user', userRouter);
+app.use('/item', itemRouter);
+app.get('/main', controller.mainpageController);
+app.get('/search', controller.searchController);
+
 
 module.exports = app.listen(port, () => {
   console.log(`🚀 Server is starting on ${port}`);
