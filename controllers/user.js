@@ -8,8 +8,6 @@ const { sign, verify } = require("jsonwebtoken");
  const {isAuthorized,//토큰 있는지 없는지 확인
   generateAccessToken,
   generateRefreshToken,
-  sendRefreshToken,
-  sendAccessToken,
   resendAccessToken,
   checkRefeshToken
   
@@ -53,13 +51,17 @@ module.exports = {
       
         const {id, user_id, email,nickname, image,createdAt, updatedAt} = userInfo
       
-  
-      const accessToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt}
-        ,process.env.ACCESS_SECRET, { expiresIn: "1d" })
+        //토큰 만드는 건 함수가져와서 쓰면 되지만 
+        const accessToken=generateAccessToken({id, user_id, email,nickname, image,createdAt, updatedAt})
+        const refreshToken =generateRefreshToken({id, user_id, email,nickname, image,createdAt, updatedAt})
 
-      const refreshToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt},
-        process.env.REFRESH_SECRET,{ expiresIn: "7d" })
-      
+        // const accessToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt}
+        //   ,process.env.ACCESS_SECRET, { expiresIn: "1d" })
+        
+        // const refreshToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt},
+        //   process.env.REFRESH_SECRET,{ expiresIn: "7d" })
+        
+        //보낼때는 다른 응답(상태,json)도 같이 보내야 되기 때문에 해당 파일에서 처리
  
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
@@ -76,16 +78,7 @@ module.exports = {
 
 logoutController: (req, res) => {
 
-    const authorization = req.headers["authorization"];
-  
-    if (!authorization) {
-      return null;
-    }
-    const token = authorization.split(" ")[1];
-    console.log(token)
-  const data =verify(token,process.env.ACCESS_SECRET )
-  console.log(data)
-  //console.log(req)
+
 //post?
   //req:jwt(localstorage),,express-session(req.session.userid)
 //res
@@ -97,8 +90,8 @@ logoutController: (req, res) => {
  // localStorage 토큰 저장 시 클라이언트에서 localStorage에서 removeItem으로 삭제하면 됨
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
-// const accessTokenData = isAuthorized(req)
-// console.log(accessTokenData)
+const accessTokenData = isAuthorized(req)
+//console.log(accessTokenData)
 
 if(!accessTokenData){
   res.status(400).send("로그인을 해 주세요")
@@ -107,8 +100,11 @@ if(!accessTokenData){
   //req.headers["authorization"]에 들어있는 액세스 토큰
  //Set-Cookie에 들어있는 리프레쉬 토큰
 
-  res.status("성공적으로 로그아웃 하였습니다") 
-  //라고 하면 클라이언트에서 로컬에 저장된 해당 토큰(req.headers.authorization)삭제
+ req.headers.authorization = '' //액세스 토큰 없애기
+ res.clearCookie('refreshToken') //쿠키지워서 리프레쉬 토큰 없애기
+ //console.log(req)
+  res.status(200).send("성공적으로 로그아웃 하였습니다") 
+  
 }
 
   
@@ -173,10 +169,13 @@ else if(!userInfo){
       const refreshToken = generateRefreshToken({id, user_id, email,nickname, name,image,createdAt, updatedAt})
       //console.log(accessToken)
      //리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
-
-sendRefreshToken(res, refreshToken,saveInfo)
-sendAccessToken(res,accessToken)
+    
+    
+     res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+    })
 .status(201).json({
+  accessToken:accessToken,
   id:saveInfo.dataValues.id, 
   user_id:saveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
   email:saveInfo.dataValues.email,
@@ -188,11 +187,9 @@ sendAccessToken(res,accessToken)
 
 }else{
   res.status(500).send("err");
-
 }
-
-
   },
+
 
 
 
