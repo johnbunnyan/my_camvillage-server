@@ -1,6 +1,8 @@
  //로그인이나 회원가입은 정상작동 포스트맨으로 확인
  //토큰 인증하는 부분에서 문제 생겨서 확인해야 됨
- 
+ require("dotenv").config();
+const { sign, verify } = require("jsonwebtoken");
+
  const { user,post } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
  const {isAuthorized,//토큰 있는지 없는지 확인
@@ -51,15 +53,17 @@ module.exports = {
       
         const {id, user_id, email,nickname, image,createdAt, updatedAt} = userInfo
       
-      const accessToken = generateAccessToken({id, user_id, email,nickname, image,createdAt, updatedAt})
-      const refreshToken = generateRefreshToken({id, user_id, email,nickname, image,createdAt, updatedAt})
+  
+      const accessToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt}
+        ,process.env.ACCESS_SECRET, { expiresIn: "1d" })
+
+      const refreshToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt},
+        process.env.REFRESH_SECRET,{ expiresIn: "7d" })
       
-      
-      //res의 _header에 Set-Cookie키 안에 refreshToken들어감
-      res.cookie("refreshToken", refreshToken, {
-      httpOnly:true
-      })//리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
-      .status(200).json({data:userInfo,accessToken:accessToken})
+ 
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+        }).status(200).json({accessToken:accessToken, data:{id, user_id, email,nickname, image,createdAt, updatedAt}} )
       }else{
         res.status(500).send("err");
       
@@ -71,7 +75,17 @@ module.exports = {
 
 
 logoutController: (req, res) => {
-  //console.log(req.body)
+
+    const authorization = req.headers["authorization"];
+  
+    if (!authorization) {
+      return null;
+    }
+    const token = authorization.split(" ")[1];
+    console.log(token)
+  const data =verify(token,process.env.ACCESS_SECRET )
+  console.log(data)
+  //console.log(req)
 //post?
   //req:jwt(localstorage),,express-session(req.session.userid)
 //res
@@ -83,8 +97,8 @@ logoutController: (req, res) => {
  // localStorage 토큰 저장 시 클라이언트에서 localStorage에서 removeItem으로 삭제하면 됨
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
-const accessTokenData = isAuthorized(req)
-console.log(accessTokenData)
+// const accessTokenData = isAuthorized(req)
+// console.log(accessTokenData)
 
 if(!accessTokenData){
   res.status(400).send("로그인을 해 주세요")
@@ -160,8 +174,8 @@ else if(!userInfo){
       //console.log(accessToken)
      //리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
 
-
-res.cookie("refreshToken", refreshToken, {httpOnly:true})
+sendRefreshToken(res, refreshToken,saveInfo)
+sendAccessToken(res,accessToken)
 .status(201).json({
   id:saveInfo.dataValues.id, 
   user_id:saveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
@@ -169,8 +183,7 @@ res.cookie("refreshToken", refreshToken, {httpOnly:true})
   nickname:saveInfo.dataValues.nickname,
   image:saveInfo.dataValues.default_image, //디폴트 이미지 저장 및 제공방법 고민하기
   createdAt:saveInfo.dataValues.createdAt,
-  updatedAt:saveInfo.dataValues.updatedAt,
-  accessToken:accessToken
+  updatedAt:saveInfo.dataValues.updatedAt
 })
 
 }else{

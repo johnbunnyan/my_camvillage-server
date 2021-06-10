@@ -1,9 +1,6 @@
 require("dotenv").config();
 const { sign, verify } = require("jsonwebtoken");
 
-const access = process.env.ACCESS_SECRET
-const refresh = process.env.REFRESH_SECRET
-
 module.exports = {
     generateAccessToken: (data) => {
       return sign(data, process.env.ACCESS_SECRET, { expiresIn: "15s" });
@@ -33,7 +30,10 @@ module.exports = {
       }
       const token = authorization.split(" ")[1];
       try {
-        return verify(token, process.env.ACCESS_SECRET);
+        //return verify(token, process.env.ACCESS_SECRET);
+        console.log(process.env.ACCESS_SECRET)
+        console.log(token)
+        console.log(verify(token, process.env.ACCESS_SECRET))
       } catch (err) {
         // return null if invalid token
         return null;

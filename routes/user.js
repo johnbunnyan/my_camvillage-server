@@ -2,7 +2,7 @@ const router = require('express').Router();
 const controller = require('../controllers/user');
 
 router.post('/login', controller.loginController);
-router.post('/logout', controller.logoutController);
+router.get('/logout', controller.logoutController);
 router.post('/signup', controller.signupController);
 router.get('/mypage', controller.mypageController);
 router.get('/item', controller.itemController);
