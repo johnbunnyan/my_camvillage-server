@@ -3,7 +3,7 @@
  require("dotenv").config();
 const { sign, verify } = require("jsonwebtoken");
 
- const { user,post } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
+ const { user,post ,category,tag,index} = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
  const {isAuthorized,//토큰 있는지 없는지 확인
   generateAccessToken,
@@ -249,19 +249,8 @@ const accessTokenData = isAuthorized(req);
 
 
   itemController: async (req, res) => {
-    const testInfo = await user.findAll({
-      include:[{
-        model:post,
-        through:{
-          attributes:[]
-        }
-        
-      }]
-
-    })
-
-    console.log(testInfo[0].dataValues.posts)
-
+    
+   
   //get
     //req token
   //
@@ -287,7 +276,7 @@ const accessTokenData = isAuthorized(req);
 //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
 
-
+//console.log(accessTokenData)
 
     if(accessTokenData){
       const { user_id } = accessTokenData;
@@ -298,17 +287,39 @@ const accessTokenData = isAuthorized(req);
       // user.belongsToMany(post, { through: 'post_user',foreignKey: 'user_id'});
       // post.belongsToMany(user, { through: 'post_user',foreignKey: 'post_id' });
 
+  
+      //console.log(itemInfo[0].dataValues)//해당 유저 정보
+      //console.log(itemInfo[0].dataValues.posts)//해당 유저의 포스트
+  
 
 
 //해당 유저의 post_user항목들과 각 post의 데이터들 가져오기
-      const itemInfo = await user.findOneAll({
-       include:[{
-         model:post,
-         through:{
-           attributes:[postId,userId]
-         }
-       }]
+      const itemInfo = await user.findAll({
+        include:[{
+          model:post,category,tag,
+          through:{
+            attributes:[]
+          }
+          
+        }],
+  where:{user_id: user_id}
       })
+
+      const cate = await post.findAll({
+include:[{
+  model:tag,category,
+  through:{
+
+  }
+}]
+      })
+
+console.log(cate[0].dataValues.tags)
+
+res.status(200).send({
+  data:itemInfo
+})
+
     }
 
 
