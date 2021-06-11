@@ -12,10 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       post.belongsToMany(models.user, {
-        through: 'post_user'
+        through: 'requestlist'
       })
       post.belongsToMany(models.user, {
-        through: 'requestlist'
+        through: 'post_user'
       })
       post.belongsToMany(models.tag, {
         through: 'post_tag'
