@@ -11,9 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      post.belongsToMany(models.user, {
-        through: 'requestlist'
-      })
+    
       post.belongsToMany(models.user, {
         through: 'post_user'
       })
@@ -21,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         through: 'post_tag'
       })
       post.belongsTo(models.category)
+      post.hasMany(models.requestlist)
     }  
 
   };

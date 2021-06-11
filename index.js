@@ -30,7 +30,7 @@ app.use('/', indexRouter);
 app.use('/user', userRouter);
 app.use('/item', itemRouter);
 app.get('/main', controller.mainpageController);
-app.get('/search', controller.searchController);
+app.post('/search', controller.searchController);
 
 
 module.exports = app.listen(port, () => {

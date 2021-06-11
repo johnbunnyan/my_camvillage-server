@@ -1,8 +1,9 @@
-
+ //로그인이나 회원가입은 정상작동 포스트맨으로 확인
+ //토큰 인증하는 부분에서 문제 생겨서 확인해야 됨
  require("dotenv").config();
-const { sign, verify } = require("jsonwebtoken");
+ const { sign, verify } = require("jsonwebtoken");
 
- const { user,post ,category,tag,index} = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
+ const { user,post, category, tag, index, requestlist } = require("../models");
 
  const {isAuthorized,//토큰 있는지 없는지 확인
   generateAccessToken,
@@ -300,11 +301,11 @@ const accessTokenData = isAuthorized(req);
 const itemInfo = await user.findAll({
  include:{
    model:post,
-  //  include:[{
-  //    model:tag
-  //  },{
-  //    model:category
-  //  }]
+   include:[{
+     model:tag
+   },{
+     model:category
+   }]
  },
  where:{user_id: user_id}
 })
@@ -312,9 +313,23 @@ const itemInfo = await user.findAll({
 //ps.forEach(ps => console.log(ps.toJSON()))
 //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
 
+// let order = {
+//   id: PK,
+//   userId: ite,
+//   title: "title",
+//   description: "description",
+//   brand: "brand",
+//   price: "price",
+//   hashtag: "hashtag", // array
+//   image: "image",
+//   createdAt: "createdAt",
+//   updatedAt: "updatedAt",
+//   categoryId: "categoryId"
+// }
+
 
 res.status(200).send({
-  data:itemInfo
+  items:itemInfo
 })
     }else if(!accessTokenData){
       res.status(401).send("토큰이 만료되었습니다")
