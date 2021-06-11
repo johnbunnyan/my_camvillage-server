@@ -12,11 +12,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      requestlist.belongsTo(models.post)
     }  
 
   };
   requestlist.init({
-    confirmation: DataTypes.STRING,
+    confirmation: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'requestlist',

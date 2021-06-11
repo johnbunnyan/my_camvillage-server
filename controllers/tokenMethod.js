@@ -3,7 +3,7 @@ const { sign, verify } = require("jsonwebtoken");
 
 module.exports = {
     generateAccessToken: (data) => {
-      return sign(data, process.env.ACCESS_SECRET, { expiresIn: "2d" });
+      return sign(data, process.env.ACCESS_SECRET, { expiresIn: "3d" });
     },
     generateRefreshToken: (data) => {
       return sign(data, process.env.REFRESH_SECRET, { expiresIn: "30d" });
@@ -24,7 +24,7 @@ module.exports = {
     //로그인 할 때 준 토큰이 있는지 없는지 확인할때 쓰는 메서드
     isAuthorized: (req) => {
       const authorization = req.headers["authorization"];
-    
+    console.log(req)
       if (!authorization) {
         return null;
       }
