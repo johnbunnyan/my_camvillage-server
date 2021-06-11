@@ -1,9 +1,13 @@
 require("dotenv").config();
 const { sign, verify } = require("jsonwebtoken");
 
+
+// const access = process.env.ACCESS_SECRET
+// const refresh = process.env.REFRESH_SECRET
+
 module.exports = {
     generateAccessToken: (data) => {
-      return sign(data, process.env.ACCESS_SECRET, { expiresIn: "3d" });
+      return sign(data, process.env.ACCESS_SECRET, { expiresIn: "2d" });
     },
     generateRefreshToken: (data) => {
       return sign(data, process.env.REFRESH_SECRET, { expiresIn: "30d" });

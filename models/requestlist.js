@@ -1,5 +1,4 @@
 'use strict';
-
 const {
   Model
 } = require('sequelize');
@@ -13,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       requestlist.belongsTo(models.post)
-    }  
+
+    }
 
   };
   requestlist.init({
@@ -22,8 +22,5 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'requestlist',
   });
-
-
   return requestlist;
-
 };

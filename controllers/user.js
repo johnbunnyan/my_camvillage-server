@@ -3,7 +3,8 @@
  require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
 
- const { user,post, category, tag, index, requestlist } = require("../models");
+
+ const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
  const {isAuthorized,//토큰 있는지 없는지 확인
   generateAccessToken,
@@ -51,26 +52,17 @@ module.exports = {
       
         const {id, user_id, name,email,nickname, user_image,createdAt, updatedAt} = userInfo
       
-        //토큰 만드는 건 함수가져와서 쓰면 되지만 
-        const accessToken=generateAccessToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
-        const refreshToken =generateRefreshToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
 
-        // const accessToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt}
-        //   ,process.env.ACCESS_SECRET, { expiresIn: "1d" })
-        
-        // const refreshToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt},
-        //   process.env.REFRESH_SECRET,{ expiresIn: "7d" })
-        
-        //보낼때는 다른 응답(상태,json)도 같이 보내야 되기 때문에 해당 파일에서 처리
- 
-        res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-        }).status(200).json({ accessToken:accessToken,id, user_id, name,email,nickname, user_image,createdAt, updatedAt} )
-      }else{
-        res.status(500).send("err");
-      
-      }
+      //res의 _header에 Set-Cookie키 안에 refreshToken들어감
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+      }).status(200).json({accessToken:accessToken, data:{id, user_id, email,nickname, image,createdAt, updatedAt}} )
+    }else{
+      res.status(500).send("err");
 
+
+    }
+      console.log(cookie)
 
 },
 
@@ -92,7 +84,7 @@ logoutController: (req, res) => {
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
 const accessTokenData = isAuthorized(req)
 //console.log(accessTokenData)
-//console.log(req)
+
 if(!accessTokenData){
   res.status(401).send("토큰이 만료되었습니다")
 }else if(accessTokenData){
@@ -100,19 +92,16 @@ if(!accessTokenData){
   //req.headers["authorization"]에 들어있는 액세스 토큰
  //Set-Cookie에 들어있는 리프레쉬 토큰
 
- req.headers.authorization = '' //액세스 토큰 없애기
- res.clearCookie('refreshToken') //쿠키지워서 리프레쉬 토큰 없애기
+
+  req.headers.authorization = '' //액세스 토큰 없애기
+  res.clearCookie('refreshToken') //쿠키지워서 리프레쉬 토큰 없애기
  //console.log(req)
   res.status(200).send("성공적으로 로그아웃 하였습니다") 
-  
-}else{
-  res.status(500).send("err");
+
 }
 
   
 },
-
-
 
 
 signupController: async (req, res) => {
@@ -172,11 +161,13 @@ else if(!userInfo){
       const refreshToken = generateRefreshToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
       //console.log(accessToken)
      //리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
-    
-    
-     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-    })
+
+
+
+res.cookie("refreshToken", refreshToken, {
+  httpOnly:true
+})
+
 .status(201).json({
   accessToken:accessToken,
   id:saveInfo.dataValues.id, 
@@ -193,11 +184,6 @@ else if(!userInfo){
   res.status(500).send("err");
 }
   },
-
-
-
-
-
 
   mypageController: async (req, res) => {
   //get
@@ -255,7 +241,7 @@ const accessTokenData = isAuthorized(req);
 
   itemController: async (req, res) => {
     
-   
+
   //get
     //req token
   //
@@ -283,14 +269,14 @@ const accessTokenData = isAuthorized(req);
 
 //console.log(accessTokenData)
 
+
     if(accessTokenData){
       const { user_id } = accessTokenData;
-     
-  
+
       //console.log(itemInfo[0].dataValues)//해당 유저 정보
       //console.log(itemInfo[0].dataValues.posts)//해당 유저의 포스트
       //기본적으로 배열 안에 리스트업->where로 인덱스[n] 구체화 시키면 해결
-      
+
       //todo
       //🔵해당 유저가 가진 포스트 리스트업
       //🔵그 포스트의 해쉬태그
@@ -299,43 +285,30 @@ const accessTokenData = isAuthorized(req);
 
 //해당유저와 포스트 및 태그//////////////////////////////////////
 const itemInfo = await user.findAll({
- include:{
-   model:post,
-   include:[{
-     model:tag
-   },{
-     model:category
-   }]
- },
- where:{user_id: user_id}
-})
+  include:{
+    model:post,
+    include:[{
+      model:tag
+    },{
+      model:category
+    }]
+  },
+  where:{user_id: user_id}
+ })
 
 //ps.forEach(ps => console.log(ps.toJSON()))
 //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
 
-// let order = {
-//   id: PK,
-//   userId: ite,
-//   title: "title",
-//   description: "description",
-//   brand: "brand",
-//   price: "price",
-//   hashtag: "hashtag", // array
-//   image: "image",
-//   createdAt: "createdAt",
-//   updatedAt: "updatedAt",
-//   categoryId: "categoryId"
-// }
-
 
 res.status(200).send({
-  items:itemInfo
+  data:itemInfo
 })
     }else if(!accessTokenData){
       res.status(401).send("토큰이 만료되었습니다")
     }
     else{
       res.status(500).send("err");
+
     }
   },
 
@@ -367,7 +340,7 @@ const accessTokenData = isAuthorized(req);
 
 if(accessTokenData){
   const { user_id } = accessTokenData;
- 
+
 
 //해당유저와 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
 const requestInfo = await requestlist.findAll({
@@ -396,6 +369,54 @@ else{
   },
 
   requestedController: async (req, res) => {
+
+  //get
+      //req token
+    //res
+  //   200 {
+  //     requested: [
+  //         {
+  //             "id": PK,
+  //             "user_id": "user_id",
+  //             "title": "title",
+  //             "photo": "photo",
+  //             "confirmation": 0, // 0: no response, 1: yes, 2: no
+  //             "createdAt": "createdAt",
+  //             "updatedAt": "updatedAt"
+  //         },
+  //         ...
+  //     ]
+  // }
+  //500 err
+
+  const accessTokenData = isAuthorized(req);
+
+  if(accessTokenData){
+    const { user_id } = accessTokenData;
+
+    //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
+  const requestedInfo = await user.findAll({
+    include:{
+    model:post,
+     through:{}
+    },
+    where:{user_id: user_id}
+    })
+  
+    //ps.forEach(ps => console.log(ps.toJSON()))
+    //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+  
+  
+    res.status(200).send({
+    data:requestedInfo
+    })
+  }else if(!accessTokenData){
+    res.status(401).send("토큰이 만료되었습니다")
+  }
+  else{
+    res.status(500).send("err");
+  }
+
 
     //get
       //req token
@@ -463,7 +484,9 @@ else{
 //     "createdAt": "created time",
 //     "updatedAt": "updated time"
 // }
-//401 { "토큰이 만료되었습니" }
+
+//401 { "토큰이 만료되었습니다" }
+
 //500 err
 
 
