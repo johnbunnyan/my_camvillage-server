@@ -14,13 +14,11 @@ module.exports = (sequelize, DataTypes) => {
       post.belongsToMany(models.user, {
         through: 'post_user'
       })
-      post.belongsToMany(models.user, {
-        through: 'requestlist'
-      })
       post.belongsToMany(models.tag, {
         through: 'post_tag'
       })
       post.belongsTo(models.category)
+      post.hasMany(models.requestlist)
     }  
 
   };
