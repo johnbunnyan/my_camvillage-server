@@ -6,7 +6,6 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class post extends Model {
     /**
-     * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
@@ -15,9 +14,13 @@ module.exports = (sequelize, DataTypes) => {
       post.belongsToMany(models.user, {
         through: 'post_user'
       })
+      post.belongsToMany(models.user, {
+        through: 'requestlist'
+      })
       post.belongsToMany(models.tag, {
         through: 'post_tag'
       })
+      post.belongsTo(models.category)
     }  
 
   };
