@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       user.belongsToMany(models.post, {
         through: 'post_user'
       })
+      user.belongsToMany(models.post, {
+        through: 'requestlist'
+      })
     }
   };
   user.init({
