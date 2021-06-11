@@ -1,13 +1,12 @@
- //로그인이나 회원가입은 정상작동 포스트맨으로 확인
- //토큰 인증하는 부분에서 문제 생겨서 확인해야 됨
- 
- const { user,post } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
+
+ require("dotenv").config();
+const { sign, verify } = require("jsonwebtoken");
+
+ const { user,post ,category,tag,index,requestlist} = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
  const {isAuthorized,//토큰 있는지 없는지 확인
   generateAccessToken,
   generateRefreshToken,
-  sendRefreshToken,
-  sendAccessToken,
   resendAccessToken,
   checkRefeshToken
   
@@ -51,15 +50,21 @@ module.exports = {
       
         const {id, user_id, email,nickname, image,createdAt, updatedAt} = userInfo
       
-      const accessToken = generateAccessToken({id, user_id, email,nickname, image,createdAt, updatedAt})
-      const refreshToken = generateRefreshToken({id, user_id, email,nickname, image,createdAt, updatedAt})
-      
-      
-      //res의 _header에 Set-Cookie키 안에 refreshToken들어감
-      res.cookie("refreshToken", refreshToken, {
-      httpOnly:true
-      })//리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
-      .status(200).json({data:userInfo,accessToken:accessToken})
+        //토큰 만드는 건 함수가져와서 쓰면 되지만 
+        const accessToken=generateAccessToken({id, user_id, email,nickname, image,createdAt, updatedAt})
+        const refreshToken =generateRefreshToken({id, user_id, email,nickname, image,createdAt, updatedAt})
+
+        // const accessToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt}
+        //   ,process.env.ACCESS_SECRET, { expiresIn: "1d" })
+        
+        // const refreshToken = sign({id, user_id, email,nickname, image,createdAt, updatedAt},
+        //   process.env.REFRESH_SECRET,{ expiresIn: "7d" })
+        
+        //보낼때는 다른 응답(상태,json)도 같이 보내야 되기 때문에 해당 파일에서 처리
+ 
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+        }).status(200).json({accessToken:accessToken, data:{id, user_id, email,nickname, image,createdAt, updatedAt}} )
       }else{
         res.status(500).send("err");
       
@@ -71,7 +76,8 @@ module.exports = {
 
 
 logoutController: (req, res) => {
-  //console.log(req.body)
+
+
 //post?
   //req:jwt(localstorage),,express-session(req.session.userid)
 //res
@@ -84,8 +90,8 @@ logoutController: (req, res) => {
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
 const accessTokenData = isAuthorized(req)
-console.log(accessTokenData)
-
+//console.log(accessTokenData)
+//console.log(req)
 if(!accessTokenData){
   res.status(400).send("로그인을 해 주세요")
 }else{
@@ -93,8 +99,11 @@ if(!accessTokenData){
   //req.headers["authorization"]에 들어있는 액세스 토큰
  //Set-Cookie에 들어있는 리프레쉬 토큰
 
-  res.status("성공적으로 로그아웃 하였습니다") 
-  //라고 하면 클라이언트에서 로컬에 저장된 해당 토큰(req.headers.authorization)삭제
+ req.headers.authorization = '' //액세스 토큰 없애기
+ res.clearCookie('refreshToken') //쿠키지워서 리프레쉬 토큰 없애기
+ //console.log(req)
+  res.status(200).send("성공적으로 로그아웃 하였습니다") 
+  
 }
 
   
@@ -159,27 +168,27 @@ else if(!userInfo){
       const refreshToken = generateRefreshToken({id, user_id, email,nickname, name,image,createdAt, updatedAt})
       //console.log(accessToken)
      //리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
-
-
-res.cookie("refreshToken", refreshToken, {httpOnly:true})
+    
+    
+     res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+    })
 .status(201).json({
+  accessToken:accessToken,
   id:saveInfo.dataValues.id, 
   user_id:saveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
   email:saveInfo.dataValues.email,
   nickname:saveInfo.dataValues.nickname,
   image:saveInfo.dataValues.default_image, //디폴트 이미지 저장 및 제공방법 고민하기
   createdAt:saveInfo.dataValues.createdAt,
-  updatedAt:saveInfo.dataValues.updatedAt,
-  accessToken:accessToken
+  updatedAt:saveInfo.dataValues.updatedAt
 })
 
 }else{
   res.status(500).send("err");
-
 }
-
-
   },
+
 
 
 
@@ -229,7 +238,7 @@ const accessTokenData = isAuthorized(req);
 
     }else if(!accessTokenData){
       
-      res.status(400).send("토큰이 없거나 사용할 수 없는 토큰입니다")
+      res.status(401).send("토큰이 만료되었습니다")
 
     }else{
     res.status(500).send("err");
@@ -239,19 +248,8 @@ const accessTokenData = isAuthorized(req);
 
 
   itemController: async (req, res) => {
-    const testInfo = await user.findAll({
-      include:[{
-        model:post,
-        through:{
-          attributes:[]
-        }
-        
-      }]
-
-    })
-
-    console.log(testInfo[0].dataValues.posts)
-
+    
+   
   //get
     //req token
   //
@@ -277,35 +275,53 @@ const accessTokenData = isAuthorized(req);
 //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
 
-
+//console.log(accessTokenData)
 
     if(accessTokenData){
       const { user_id } = accessTokenData;
      
+  
+      //console.log(itemInfo[0].dataValues)//해당 유저 정보
+      //console.log(itemInfo[0].dataValues.posts)//해당 유저의 포스트
+      //기본적으로 배열 안에 리스트업->where로 인덱스[n] 구체화 시키면 해결
+      
+      //todo
+      //🔵해당 유저가 가진 포스트 리스트업
+      //🔵그 포스트의 해쉬태그
+      //🔴그 포스트의 카테고리(머지하면 가능)
 
-      //조인 테이블->user테이블, post_user 테이블, post테이블
-      //post_user 조인테이블 생성(필드-user_id,post_id)
-      // user.belongsToMany(post, { through: 'post_user',foreignKey: 'user_id'});
-      // post.belongsToMany(user, { through: 'post_user',foreignKey: 'post_id' });
+
+//해당유저와 포스트 및 태그//////////////////////////////////////
+const itemInfo = await user.findAll({
+ include:{
+   model:post,
+   include:[{
+     model:tag
+   },{
+     model:category
+   }]
+ },
+ where:{user_id: user_id}
+})
+
+//ps.forEach(ps => console.log(ps.toJSON()))
+//ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
 
 
-
-//해당 유저의 post_user항목들과 각 post의 데이터들 가져오기
-      const itemInfo = await user.findOneAll({
-       include:[{
-         model:post,
-         through:{
-           attributes:[postId,userId]
-         }
-       }]
-      })
+res.status(200).send({
+  data:itemInfo
+})
+    }else if(!accessTokenData){
+      res.status(401).send("토큰이 만료되었습니다")
     }
-
-
+    else{
+      res.status(500).send("err");
+    }
   },
 
+  
   requestController: async (req, res) => {
-  //get
+  //post
     //req token
 //
 // 200 {
@@ -324,30 +340,94 @@ const accessTokenData = isAuthorized(req);
 // }
 //500 err
 
+//여기 메서드에서 줄 데이터 그룹-3개
+//postId(나)의 게시물 정보와 나의 userId/그리고 userId(신청유저) / 컨퍼메이션
+
+const accessTokenData = isAuthorized(req);
+
+if(accessTokenData){
+  const { user_id } = accessTokenData;
+ 
+
+//해당유저와 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
+const requestInfo = await requestlist.findAll({
+// include:{
+// model:post,
+// through:{}
+// },
+// where:{user_id: user_id}
+})
+
+//ps.forEach(ps => console.log(ps.toJSON()))
+//ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+
+
+res.status(200).send({
+data:requestInfo
+})
+}else if(!accessTokenData){
+  res.status(401).send("토큰이 만료되었습니다")
+}
+else{
+  res.status(500).send("err");
+}
+
 
   },
 
   requestedController: async (req, res) => {
-  //get
-    //req token
-  //res
-//   200 {
-//     requested: [
-//         {
-//             "id": PK,
-//             "user_id": "user_id",
-//             "title": "title",
-//             "photo": "photo",
-//             "confirmation": 0, // 0: no response, 1: yes, 2: no
-//             "createdAt": "createdAt",
-//             "updatedAt": "updatedAt"
-//         },
-//         ...
-//     ]
-// }
-//500 err
 
+    //get
+      //req token
+    //res
+  //   200 {
+  //     requested: [
+  //         {
+  //             "id": PK,
+  //             "user_id": "user_id",
+  //             "title": "title",
+  //             "photo": "photo",
+  //             "confirmation": 0, // 0: no response, 1: yes, 2: no
+  //             "createdAt": "createdAt",
+  //             "updatedAt": "updatedAt"
+  //         },
+  //         ...
+  //     ]
+  // }
+  //500 err
+  
+  const accessTokenData = isAuthorized(req);
+
+  if(accessTokenData){
+    const { user_id } = accessTokenData;
+   
+  
+  //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
+  const requestedInfo = await user.findAll({
+  include:{
+  model:post,
+   through:{}
   },
+  where:{user_id: user_id}
+  })
+  
+  //ps.forEach(ps => console.log(ps.toJSON()))
+  //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+  
+  
+  res.status(200).send({
+  data:requestedInfo
+  })
+}else if(!accessTokenData){
+  res.status(401).send("토큰이 만료되었습니다")
+}
+else{
+  res.status(500).send("err");
+}
+  
+
+    },
+
   alterController: async (req, res) => {
 //계속해서 토큰을 확인하는 이유:매 요청은 서로 독립적,유저를 식별해야 해당하는 정보 처리가능  
 
@@ -363,7 +443,7 @@ const accessTokenData = isAuthorized(req);
 //     "createdAt": "created time",
 //     "updatedAt": "updated time"
 // }
-//400 { "토큰이 만료되었습니" }
+//401 { "토큰이 만료되었습니" }
 //500 err
 
 
@@ -399,6 +479,11 @@ await userInfo.save()
 
 res.status(200).send(userInfo)
   }
+}else if(!accessTokenData){
+  res.status(401).send("토큰이 만료되었습니다")
+}
+else{
+  res.status(500).send("err");
 }
 
 
