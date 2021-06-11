@@ -3,6 +3,7 @@
  require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
 
+
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
  const {isAuthorized,//토큰 있는지 없는지 확인
@@ -49,18 +50,16 @@ module.exports = {
       //유저가 있으면(맞으면) 토큰도 같이 줘야됨
       //비밀번호는 안주는 게 낫지 않나?
       
-        const {id, user_id, email,nickname, image,createdAt, updatedAt} = userInfo
+        const {id, user_id, name,email,nickname, user_image,createdAt, updatedAt} = userInfo
       
-      const accessToken = generateAccessToken({id, user_id, email,nickname, image,createdAt, updatedAt})
-      const refreshToken = generateRefreshToken({id, user_id, email,nickname, image,createdAt, updatedAt})
-      
-      
+
       //res의 _header에 Set-Cookie키 안에 refreshToken들어감
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
       }).status(200).json({accessToken:accessToken, data:{id, user_id, email,nickname, image,createdAt, updatedAt}} )
     }else{
       res.status(500).send("err");
+
 
     }
       console.log(cookie)
@@ -70,7 +69,8 @@ module.exports = {
 
 
 logoutController: (req, res) => {
-  //console.log(req.body)
+
+
 //post?
   //req:jwt(localstorage),,express-session(req.session.userid)
 //res
@@ -86,16 +86,18 @@ const accessTokenData = isAuthorized(req)
 //console.log(accessTokenData)
 
 if(!accessTokenData){
-  res.status(400).send("로그인을 해 주세요")
-}else{
+  res.status(401).send("토큰이 만료되었습니다")
+}else if(accessTokenData){
   //쿠키에 담겨있는 토큰을 없애면 로그아웃 되는 거
   //req.headers["authorization"]에 들어있는 액세스 토큰
  //Set-Cookie에 들어있는 리프레쉬 토큰
+
 
   req.headers.authorization = '' //액세스 토큰 없애기
   res.clearCookie('refreshToken') //쿠키지워서 리프레쉬 토큰 없애기
  //console.log(req)
   res.status(200).send("성공적으로 로그아웃 하였습니다") 
+
 }
 
   
@@ -146,40 +148,41 @@ else if(!userInfo){
   email: req.body.email, 
   password: req.body.password,
   nickname:req.body.nickname,
-  image:null,
-  name:req.body.name
+  user_image:req.body.user_image,
+  name:req.body.name,
+  user_image:null
 
 })
 //회원가입 정보 DB에 저장하면서 토큰 만들어 주기
 //console.log(saveInfo)
-      const {id, user_id, email,nickname, name,image,createdAt, updatedAt} = saveInfo
+      const {id, user_id, name,email,nickname, user_image,createdAt, updatedAt} = saveInfo
       //console.log(nickname)
-      const accessToken = generateAccessToken({id, user_id, email,nickname, name,image,createdAt, updatedAt})
-      const refreshToken = generateRefreshToken({id, user_id, email,nickname, name,image,createdAt, updatedAt})
+      const accessToken = generateAccessToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
+      const refreshToken = generateRefreshToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
       //console.log(accessToken)
      //리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
+
 
 
 res.cookie("refreshToken", refreshToken, {
   httpOnly:true
 })
+
 .status(201).json({
   accessToken:accessToken,
   id:saveInfo.dataValues.id, 
   user_id:saveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
+  name:saveInfo.dataValues.name,
   email:saveInfo.dataValues.email,
   nickname:saveInfo.dataValues.nickname,
-  image:saveInfo.dataValues.default_image, //디폴트 이미지 저장 및 제공방법 고민하기
+  user_image:saveInfo.dataValues.user_image, //디폴트 이미지 저장 및 제공방법 고민하기
   createdAt:saveInfo.dataValues.createdAt,
   updatedAt:saveInfo.dataValues.updatedAt
 })
 
 }else{
   res.status(500).send("err");
-
 }
-
-
   },
 
   mypageController: async (req, res) => {
@@ -215,12 +218,13 @@ const accessTokenData = isAuthorized(req);
       }else{
         res.status(200).json({
           id:giveInfo.dataValues.id, 
-          user_id:giveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
-          email:giveInfo.dataValues.email,
-          nickname:giveInfo.dataValues.nickname,
-          image:giveInfo.dataValues.default_image, //디폴트 이미지 저장 및 제공방법 고민하기
-          createdAt:giveInfo.dataValues.createdAt,
-          updatedAt:giveInfo.dataValues.updatedAt,
+  user_id:giveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
+  name:giveInfo.dataValues.name,
+  email:giveInfo.dataValues.email,
+  nickname:giveInfo.dataValues.nickname,
+  user_image:giveInfo.dataValues.user_image, //디폴트 이미지 저장 및 제공방법 고민하기
+  createdAt:giveInfo.dataValues.createdAt,
+  updatedAt:giveInfo.dataValues.updatedAt
         })  
       }
 
@@ -262,6 +266,7 @@ const accessTokenData = isAuthorized(req);
 
 //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
+
 //console.log(accessTokenData)
 
 
@@ -294,6 +299,7 @@ const itemInfo = await user.findAll({
 //ps.forEach(ps => console.log(ps.toJSON()))
 //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
 
+
 res.status(200).send({
   data:itemInfo
 })
@@ -304,10 +310,9 @@ res.status(200).send({
       res.status(500).send("err");
 
     }
-
-
   },
 
+  
   requestController: async (req, res) => {
   //post
     //req token
@@ -360,9 +365,11 @@ else{
   res.status(500).send("err");
 }
 
+
   },
 
   requestedController: async (req, res) => {
+
   //get
       //req token
     //res
@@ -411,7 +418,57 @@ else{
   }
 
 
+    //get
+      //req token
+    //res
+  //   200 {
+  //     requested: [
+  //         {
+  //             "id": PK,
+  //             "user_id": "user_id",
+  //             "title": "title",
+  //             "photo": "photo",
+  //             "confirmation": 0, // 0: no response, 1: yes, 2: no
+  //             "createdAt": "createdAt",
+  //             "updatedAt": "updatedAt"
+  //         },
+  //         ...
+  //     ]
+  // }
+  //500 err
+  
+  const accessTokenData = isAuthorized(req);
+
+  if(accessTokenData){
+    const { user_id } = accessTokenData;
+   
+  
+  //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
+  const requestedInfo = await user.findAll({
+  include:{
+  model:post,
+   through:{}
   },
+  where:{user_id: user_id}
+  })
+  
+  //ps.forEach(ps => console.log(ps.toJSON()))
+  //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+  
+  
+  res.status(200).send({
+  data:requestedInfo
+  })
+}else if(!accessTokenData){
+  res.status(401).send("토큰이 만료되었습니다")
+}
+else{
+  res.status(500).send("err");
+}
+  
+
+    },
+
   alterController: async (req, res) => {
 //계속해서 토큰을 확인하는 이유:매 요청은 서로 독립적,유저를 식별해야 해당하는 정보 처리가능  
 
@@ -427,7 +484,9 @@ else{
 //     "createdAt": "created time",
 //     "updatedAt": "updated time"
 // }
+
 //401 { "토큰이 만료되었습니다" }
+
 //500 err
 
 
@@ -446,22 +505,26 @@ if(accessTokenData){
   }else{
 //req.body의 정보들을 userDB에 업데이트
 //수정된 데이터가 있을때만 업데이트, 없으면 x 
-if(req.body.nickname){
-  userInfo.nickname=req.body.nickname
-}
-if(req.body.email){
+ 
+
+userInfo.nickname=req.body.nickname
   userInfo.email=req.body.email
-}
-if(req.body.password){
   userInfo.password=req.body.password
-}
-if(req.body.photo){
-  userInfo.photo=req.body.photo
-}
+  userInfo.user_image=req.body.user_image
 
 await userInfo.save()
 
-res.status(200).send(userInfo)
+
+res.status(200).send({
+  id:userInfo.dataValues.id, 
+  user_id:userInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
+  name:userInfo.dataValues.name,
+  email:userInfo.dataValues.email,
+  nickname:userInfo.dataValues.nickname,
+  user_image:userInfo.dataValues.user_image, //디폴트 이미지 저장 및 제공방법 고민하기
+  createdAt:userInfo.dataValues.createdAt,
+  updatedAt:userInfo.dataValues.updatedAt
+})
   }
 }else if(!accessTokenData){
   res.status(401).send("토큰이 만료되었습니다")
@@ -473,4 +536,71 @@ else{
 
 
   },
+
+
+
+
+
+  //////////////////리프레쉬 컨트롤러//////////////////////////
+  // refreshController: async (req, res) => {
+  //   //계속해서 토큰을 확인하는 이유:매 요청은 서로 독립적,유저를 식별해야 해당하는 정보 처리가능  
+    
+  //     //req token(headers) / nickname,email,password,photo(body)
+  //     //res
+  //   //   200 {
+  //   //     "id": PK,
+  //   //     "user_id": "user_id",
+  //   //     "email": "email",
+  //   //     "password": "password",
+  //   //     "nickname": "nickname",
+  //   //     "image": "image",
+  //   //     "createdAt": "created time",
+  //   //     "updatedAt": "updated time"
+  //   // }
+  //   //401 { "토큰이 만료되었습니" }
+  //   //500 err
+    
+    
+  //       //토큰 있는지 확인
+  //   const accessTokenData = isAuthorized(req);
+    
+    
+  //   if(accessTokenData){
+  //     const { user_id } = accessTokenData;
+     
+  //     const userInfo = await user.findOne({
+  //       where : {user_id}
+  //     })
+  //     if(!userInfo){
+  //       res.status(400).send("토큰이 만료되었습니다" )
+  //     }else{
+  //   //req.body의 정보들을 userDB에 업데이트
+  //   //수정된 데이터가 있을때만 업데이트, 없으면 x 
+  //   if(req.body.nickname){
+  //     userInfo.nickname=req.body.nickname
+  //   }
+  //   if(req.body.email){
+  //     userInfo.email=req.body.email
+  //   }
+  //   if(req.body.password){
+  //     userInfo.password=req.body.password
+  //   }
+  //   if(req.body.photo){
+  //     userInfo.photo=req.body.photo
+  //   }
+    
+  //   await userInfo.save()
+    
+  //   res.status(200).send(userInfo)
+  //     }
+  //   }else if(!accessTokenData){
+  //     res.status(401).send("토큰이 만료되었습니다")
+  //   }
+  //   else{
+  //     res.status(500).send("err");
+  //   }
+    
+    
+    
+  //     }
 };

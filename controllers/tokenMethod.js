@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { sign, verify } = require("jsonwebtoken");
 
+
 // const access = process.env.ACCESS_SECRET
 // const refresh = process.env.REFRESH_SECRET
 
@@ -27,7 +28,7 @@ module.exports = {
     //로그인 할 때 준 토큰이 있는지 없는지 확인할때 쓰는 메서드
     isAuthorized: (req) => {
       const authorization = req.headers["authorization"];
-    
+    console.log(req)
       if (!authorization) {
         return null;
       }
