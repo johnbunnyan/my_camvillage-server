@@ -42,7 +42,7 @@ module.exports = {
     })
     
 
-    //console.log(userInfo)
+    console.log(userInfo)
 
       if(!userInfo){
         res.status(401).send("유저 정보가 정확하지 않거나 비밀번호가 틀렸습니다")
@@ -62,7 +62,7 @@ module.exports = {
 
 
     }
-      console.log(cookie)
+     // console.log(cookie)
 
 },
 
@@ -212,6 +212,7 @@ const accessTokenData = isAuthorized(req);
       const giveInfo = await user.findOne({
         where : {user_id}
       })
+      console.log(giveInfo);
 
       if(!giveInfo){
         return res.status(400).send("토큰이 만료되었습니다")

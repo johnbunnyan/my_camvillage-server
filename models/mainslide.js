@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   mainslide.init({
-    image: DataTypes.BLOB
+    image: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'mainslide',
