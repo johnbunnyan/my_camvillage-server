@@ -421,54 +421,8 @@ else{
     res.status(500).send("err");
   }
 
+  
 
-    //get
-      //req token
-    //res
-  //   200 {
-  //     requested: [
-  //         {
-  //             "id": PK,
-  //             "user_id": "user_id",
-  //             "title": "title",
-  //             "photo": "photo",
-  //             "confirmation": 0, // 0: no response, 1: yes, 2: no
-  //             "createdAt": "createdAt",
-  //             "updatedAt": "updatedAt"
-  //         },
-  //         ...
-  //     ]
-  // }
-  //500 err
-  
-  const accessTokenData = isAuthorized(req);
-
-  if(accessTokenData){
-    const { user_id } = accessTokenData;
-   
-  
-  //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
-  const requestedInfo = await user.findAll({
-  include:{
-  model:post,
-   through:{}
-  },
-  where:{user_id: user_id}
-  })
-  
-  //ps.forEach(ps => console.log(ps.toJSON()))
-  //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
-  
-  
-  res.status(200).send({
-  data:requestedInfo
-  })
-}else if(!accessTokenData){
-  res.status(401).send("토큰이 만료되었습니다")
-}
-else{
-  res.status(500).send("err");
-}
   
 
     },
