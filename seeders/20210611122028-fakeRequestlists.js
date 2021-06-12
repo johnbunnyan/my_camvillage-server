@@ -5,21 +5,29 @@ module.exports = {
 
     await queryInterface.bulkInsert('requestlists', [
       {
+        confirmation: '1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
         postId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        userId: 'king'
       }, {
-        postId: 3,
+        confirmation: '2',
         createdAt: new Date(),
         updatedAt: new Date(),
-      },{
         postId: 3,
+        userId: 'lightning'
+      },{
+        confirmation: '1',
         createdAt: new Date(),
         updatedAt: new Date(),
+        postId: 3,
+        userId: 'lightning'
       },{
+        confirmation: '0',
+        createdAt: new Date(),
+        updatedAt: new Date(),
         postId: 4,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        userId: 'faker'
       },
     ]);
   },

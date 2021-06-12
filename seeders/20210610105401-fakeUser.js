@@ -10,6 +10,7 @@ module.exports = {
         name: 'michael',
         email: 'jordan@authstates.com',
         nickname: 'airjordan',
+        user_image: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },{
@@ -18,6 +19,7 @@ module.exports = {
         name: 'usain',
         email: 'bolt@authstates.com',
         nickname: 'bolt',
+        user_image: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },{
@@ -26,6 +28,7 @@ module.exports = {
         name: 'lee',
         email: 'faker@authstates.com',
         nickname: 'lol',
+        user_image: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
