@@ -236,78 +236,78 @@ const accessTokenData = isAuthorized(req);
 
 
 
-  itemController: async (req, res) => {
+//   itemController: async (req, res) => {
     
 
-  //get
-    //req token
-  //
-//   200 {
-//     items: [{
-//             "id": PK,
-//             "user_id": "user_id",
-//             "title": "title",
-//             "hashtag": "hashtag",
-//             "photo": "photo",
-//             "category_id": "category_id",
-//             "brand": "brand",
-//             "price": "price",
-//             "info": "info,
-//             "createdAt": "createdAt",
-//             "updatedAt": "updatedAt"
-//         },
-//         ...
-//         ]
-// }
-//500 err
+//   //get
+//     //req token
+//   //
+// //   200 {
+// //     items: [{
+// //             "id": PK,
+// //             "user_id": "user_id",
+// //             "title": "title",
+// //             "hashtag": "hashtag",
+// //             "photo": "photo",
+// //             "category_id": "category_id",
+// //             "brand": "brand",
+// //             "price": "price",
+// //             "info": "info,
+// //             "createdAt": "createdAt",
+// //             "updatedAt": "updatedAt"
+// //         },
+// //         ...
+// //         ]
+// // }
+// //500 err
 
-//토큰 있는지 확인
-const accessTokenData = isAuthorized(req);
-//console.log(accessTokenData)
-
-
-    if(accessTokenData){
-      const { user_id } = accessTokenData;
-
-      //console.log(itemInfo[0].dataValues)//해당 유저 정보
-      //console.log(itemInfo[0].dataValues.posts)//해당 유저의 포스트
-      //기본적으로 배열 안에 리스트업->where로 인덱스[n] 구체화 시키면 해결
-
-      //todo
-      //🔵해당 유저가 가진 포스트 리스트업
-      //🔵그 포스트의 해쉬태그
-      //🔴그 포스트의 카테고리(머지하면 가능)
+// //토큰 있는지 확인
+// const accessTokenData = isAuthorized(req);
+// //console.log(accessTokenData)
 
 
-//해당유저와 포스트 및 태그//////////////////////////////////////
-const itemInfo = await user.findAll({
-  include:{
-    model:post,
-    include:[{
-      model:tag
-    },{
-      model:category
-    }]
-  },
-  where:{user_id: user_id}
- })
+//     if(accessTokenData){
+//       const { user_id } = accessTokenData;
 
-//ps.forEach(ps => console.log(ps.toJSON()))
-//ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+//       //console.log(itemInfo[0].dataValues)//해당 유저 정보
+//       //console.log(itemInfo[0].dataValues.posts)//해당 유저의 포스트
+//       //기본적으로 배열 안에 리스트업->where로 인덱스[n] 구체화 시키면 해결
 
-res.status(200).send({
-  data:itemInfo
-})
-    }else if(!accessTokenData){
-      res.status(401).send("토큰이 만료되었습니다")
-    }
-    else{
-      res.status(500).send("err");
-
-    }
+//       //todo
+//       //🔵해당 유저가 가진 포스트 리스트업
+//       //🔵그 포스트의 해쉬태그
+//       //🔴그 포스트의 카테고리(머지하면 가능)
 
 
-  },
+// //해당유저와 포스트 및 태그//////////////////////////////////////
+// const itemInfo = await user.findAll({
+//   include:{
+//     model:post,
+//     include:[{
+//       model:tag
+//     },{
+//       model:category
+//     }]
+//   },
+//   where:{user_id: user_id}
+//  })
+
+// //ps.forEach(ps => console.log(ps.toJSON()))
+// //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+
+// res.status(200).send({
+//   data:itemInfo
+// })
+//     }else if(!accessTokenData){
+//       res.status(401).send("토큰이 만료되었습니다")
+//     }
+//     else{
+//       res.status(500).send("err");
+
+//     }
+
+
+//   },
 
   requestController: async (req, res) => {
   //post
