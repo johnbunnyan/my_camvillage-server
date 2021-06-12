@@ -17,8 +17,12 @@ module.exports = (sequelize, DataTypes) => {
       post.belongsToMany(models.tag, {
         through: 'post_tag'
       })
-      post.belongsTo(models.category)
-      post.hasMany(models.requestlist)
+      post.belongsTo(models.category, {
+        foreignKey: 'categoryId'
+      })
+      post.hasMany(models.requestlist, {
+        foreignKey: 'postId'
+      })
     }  
 
   };
@@ -27,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     description: DataTypes.STRING,
     brand: DataTypes.STRING,
     price: DataTypes.INTEGER,
-    image: DataTypes.BLOB
+    image: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'post',
