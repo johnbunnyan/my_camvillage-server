@@ -16,6 +16,20 @@ const {isAuthorized,//토큰 있는지 없는지 확인
 } =require('./tokenMethod');
 
 
+const { QueryTypes } = require('sequelize');
+
+const db = require('../models/index');
+
+const {isAuthorized,//토큰 있는지 없는지 확인
+  generateAccessToken,
+  generateRefreshToken,
+  sendRefreshToken,
+  sendAccessToken,
+  resendAccessToken,
+  checkRefeshToken
+
+} =require('./tokenMethod');
+
 module.exports = {
   
   mainpageController: (req, res) => {
@@ -82,6 +96,37 @@ module.exports = {
       } else {
         res.status(400).send('error message');
       }
+    }
+    // const searchInfo = await db.sequelize.query(
+    //    `select * from users
+    //    where users.nickname like :searchWord` , {
+    //      replacements: {searchWord: req.body.searchWord},
+    //      type: QueryTypes.SELECT
+    //    }
+    // )
+    // if(searchInfo){
+    //   res.status(200).send(searchInfo);
+    // } else {
+    //   res.status(400).send('error message')
+    // }
+
+    const { category, queryString } = req.body;
+
+    const searchWord = await db.sequelize.query(
+      `select * from posts
+      where posts.title like :searchWord`, {
+        replacements: {searchWord: queryString},
+        type: QueryTypes.SELECT
+      }
+    )
+    if(searchWord){
+      res.status(200).send(searchWord)
+    } else {
+      res.status(400).send('error message');
+    }
+
+    if(category === 'nickname'){
+
     }
     // const searchInfo = await db.sequelize.query(
     //    `select * from users

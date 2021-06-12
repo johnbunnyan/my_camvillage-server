@@ -28,4 +28,6 @@ module.exports = {
     await queryInterface.dropTable('requestlists');
     await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
   }
+
 };
+
