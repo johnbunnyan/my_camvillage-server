@@ -42,7 +42,8 @@ module.exports = {
 
     if(category === 'title'){
       const searchWord = await db.sequelize.query(
-        `select * from posts
+        `select posts.id, posts.title, posts.category, posts.description,
+        posts.brand, posts.price, posts.image, users.nickname, users.user_image from posts, users
         where posts.title like :searchWord`, {
           replacements: {searchWord: queryString},
           type: QueryTypes.SELECT
@@ -56,7 +57,8 @@ module.exports = {
       }
     } else if(category === 'nickname'){
       const searchNickname = await db.sequelize.query(
-        `select * from posts
+        `select posts.id, posts.title, posts.category, posts.description,
+        posts.brand, posts.price, posts.image, users.nickname, users.user_image from posts, users
         join post_user on posts.id = post_user.postId
         join users on post_user.userId = users.id
         where users.nickname like :searchNickname`, {
@@ -71,11 +73,12 @@ module.exports = {
       }
     } else if(category === 'hashtag'){
       const searchHashtag = await db.sequelize.query(
-        `select * from posts
+        `select posts.id, posts.title, posts.category, posts.description,
+        posts.brand, posts.price, posts.image, users.nickname, users.user_image from posts, users
         join post_tag on posts.id = post_tag.postId
         join tags on post_tag.tagId = tags.id
         where tags.name like :searchHashtag`, {
-          replacements: {searchHashtag: queryString},
+          replacements: {searchHashtag: `%${queryString}%`},
           type: QueryTypes.SELECT
         }
       )

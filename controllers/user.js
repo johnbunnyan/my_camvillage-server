@@ -1,5 +1,5 @@
- //로그인이나 회원가입은 정상작동 포스트맨으로 확인
- //토큰 인증하는 부분에서 문제 생겨서 확인해야 됨
+
+ const { Op } = require("sequelize");
  require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
 
@@ -85,11 +85,12 @@ logoutController: (req, res) => {
  // localStorage 토큰 저장 시 클라이언트에서 localStorage에서 removeItem으로 삭제하면 됨
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
+//console.log(req)
 const accessTokenData = isAuthorized(req)
 //console.log(accessTokenData)
 
 if(!accessTokenData){
-  res.status(401).send("토큰이 만료되었습니다")
+  res.status(400).send( "로그인을 해 주세요" )
 }else if(accessTokenData){
   //쿠키에 담겨있는 토큰을 없애면 로그아웃 되는 거
   //req.headers["authorization"]에 들어있는 액세스 토큰
@@ -229,8 +230,8 @@ const accessTokenData = isAuthorized(req);
 
 if(accessTokenData){
   //const { user_id } = accessTokenData;
-  const { id } = accessTokenData;
-
+  const { user_id } = accessTokenData;
+//console.log(user_id)
 
 //해당유저와 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
 const requestInfo = await requestlist.findAll({
@@ -241,7 +242,7 @@ include:[{
 }],
 //through:{}
 },
- //where:{id: id}
+ where:{userId: user_id}
 })
 
 //ps.forEach(ps => console.log(ps.toJSON()))
@@ -274,12 +275,12 @@ return {
       }
     }
 )
-console.log(pacakage)
-
+// console.log(pacakage)
+// console.log(requestInfo)
 
 
 res.status(200).send({
-  request:requestInfo
+  request:pacakage
 })
 }else if(!accessTokenData){
   res.status(401).send("토큰이 만료되었습니다")
@@ -306,16 +307,43 @@ else{
     const { user_id } = accessTokenData;
 
     //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
+  // const requestedInfo = await user.findAll(
+  //   {
+  //   include:{
+  //   model:post,
+  //   include:[{
+  //     model:requestlist, 
+  //     //attributes:['confirmation']
+  //     where: {
+  //       [Op.or]:[
+  //         {confirmation:'0'},
+  //         {confirmation:'1'},
+  //         {confirmation:'2'},
+  //       ]
+  //     }
+  //   }],
+  //    //through:'post_user'
+  //   },
+  //   where:{user_id: user_id}
+  //   }
+  //   )
+
   const requestedInfo = await user.findAll(
     {
     include:{
     model:post,
     include:[{
       model:requestlist, 
-      //attributes:['confirmation']
-      //where: {confirmation:'1'}
+      attributes:['confirmation','postId','userId','createdAt','updatedAt','id'],
+      where: {
+        [Op.or]:[
+          {confirmation:'0'},
+          {confirmation:'1'},
+          {confirmation:'2'},
+        ]
+      }
     }],
-     //through:'post_user'
+     through:'post_user'
     },
     where:{user_id: user_id}
     }
@@ -336,44 +364,60 @@ else{
 //3. 여러 신청한 사람 배열(기준)
 //requestedInfo[0].posts.dataValues.requestlists
 
+//배열 속에 배열이 있다는 것이 문제
 
-const pacakage=requestedInfo[0].posts.map((el)=>{
-      return {
-                id: requestedInfo[0].id,
-
-                 //나중에 id를 userId로 바꿔야됨
-                userId: el.dataValues.requestlists, 
-                title: el.title,
-                image: el.image,
-                confirmation: el.dataValues.requestlists, 
-                createdAt: el.dataValues.requestlists,
-                updatedAt: el.dataValues.requestlists
-            }
-          }
-      )
+let box=[]
+for(let i=0;i<requestedInfo[0].posts.length;i++){
+  for(let j=0;j<requestedInfo[0].posts[i].dataValues.requestlists.length;j++){
+    let obj={
       
-const last = pacakage.map((el)=>{
-  return{
-                id: el.id,
-
-                 //나중에 id를 userId로 바꿔야됨
-                userId: el, 
-                title: el.title,
-                image: el.image,
-                confirmation: el.requestlists, 
-                createdAt: el.requestlists,
-                updatedAt: el.requestlists
+      id: requestedInfo[0].id,
+      userId: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.userId , 
+      myId:user_id,
+      title: requestedInfo[0].posts[i].title,
+      image: requestedInfo[0].posts[i].image,
+      confirmation: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.confirmation, 
+      createdAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.createdAt,
+      updatedAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.updatedAt
   }
-})
+  box.push(obj)
+  }
+}
 
-      console.log(last)
+
+
+// const pacakage=requestedInfo[0].posts.map((el)=>{
+//   //console.log(el.dataValues.requestlists.length) 2,1
+//   for(let i=0;i<el.dataValues.requestlists.length;i++){
+//     return {
+      
+//               id: requestedInfo[0].id,
+//               //나중에 id를 userId로 바꿔야됨
+//               userId: el.dataValues.requestlists[i].dataValues.userId
+//               , 
+//               myId:user_id,
+//               title: el.title,
+//               image: el.image,
+//               confirmation: el.dataValues.requestlists[i].dataValues.confirmation, 
+//               createdAt: el.dataValues.requestlists[i].dataValues.createdAt,
+//               updatedAt: el.dataValues.requestlists[i].dataValues.updatedAt
+//           }
+
+//   }
+//           }
+//       )
+      
+
+
+      console.log(requestedInfo)
+      //console.log(box)
 
 
 
 
   
     res.status(200).send({
-    data:requestedInfo
+      request:box
     })
   }else if(!accessTokenData){
     res.status(401).send("토큰이 만료되었습니다")
@@ -382,6 +426,9 @@ const last = pacakage.map((el)=>{
     res.status(500).send("err");
   }
     },
+
+
+
 
   alterController: async (req, res) => {
 
