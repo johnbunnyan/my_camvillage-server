@@ -7,7 +7,7 @@ const { sign, verify } = require("jsonwebtoken");
 
 module.exports = {
     generateAccessToken: (data) => {
-      return sign(data, process.env.ACCESS_SECRET, { expiresIn: "2d" });
+      return sign(data, process.env.ACCESS_SECRET, { expiresIn: "3d" });
     },
     generateRefreshToken: (data) => {
       return sign(data, process.env.REFRESH_SECRET, { expiresIn: "30d" });
@@ -20,24 +20,24 @@ module.exports = {
     // sendAccessToken: (res, accessToken) => {
     //   res.json({ data: { accessToken }, message: "ok" });
     // },
-    resendAccessToken: (res, accessToken, data) => {
-      res.json({ data: { accessToken, userInfo: data }, message: "ok" });
+    resendAccessToken: (res, accessToken) => {
+      res.json({ accessToken, message: "ok" });
     },
 
 
     //로그인 할 때 준 토큰이 있는지 없는지 확인할때 쓰는 메서드
     isAuthorized: (req) => {
       const authorization = req.headers["authorization"];
-    console.log(req)
+    //console.log(req)
       if (!authorization) {
         return null;
       }
       const token = authorization.split(" ")[1];
       try {
+        //console.log(process.env.ACCESS_SECRET)
+        //console.log(token)
+        console.log(verify(token, process.env.ACCESS_SECRET))
         return verify(token, process.env.ACCESS_SECRET);
-        // console.log(process.env.ACCESS_SECRET)
-        // console.log(token)
-        // console.log(verify(token, process.env.ACCESS_SECRET))
       } catch (err) {
         // return null if invalid token
         return null;

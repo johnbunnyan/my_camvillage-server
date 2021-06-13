@@ -35,6 +35,9 @@ module.exports = {
   },
 
   searchController: async (req, res) => {
+   
+
+
     const { category, queryString } = req.body;
 
     if(category === 'title'){
@@ -99,6 +102,7 @@ module.exports = {
     // }
 
    
+ 
     // const searchInfo = await db.sequelize.query(
     //    `select * from users
     //    where users.nickname like :searchWord` , {
