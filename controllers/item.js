@@ -1,8 +1,11 @@
 //const { user } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
+const sequelize = require('sequelize');
+const Op = sequelize.Op
+const { QueryTypes } = require('sequelize');
+const db = require('../models/index');
 
 require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
-
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
  const {isAuthorized,//토큰 있는지 없는지 확인
@@ -17,116 +20,172 @@ module.exports = {
   
   uploadController: async (req, res) => {
     // /item/upload (post)
-    const { title, hashtag, category, brand, price, description, image } = req.body;
-    const accessTokenData = isAuthorized(req);
+     const { user_id, title, category, description, brand, price, image, hashtag } = req.body;
+    // const accessTokenData = isAuthorized(req);
 
-    if(accessTokenData){
-      const { user_id } = accessTokenData;
+    // if(accessTokenData){
+    //   const { user_id } = accessTokenData;
     
-      const userInfo = await user.findOne({
-        where : {user_id}
-      })
-      if(!userInfo){
-        res.status(400).send("토큰이 만료되었습니다" )
-      } else {
-        const submitPost = await post.create({ // tags 테이블에 tag 어떻게 넣을까
+    //   const userInfo = await user.findOne({
+    //     where : {user_id}
+    //   })
+    //   if(!userInfo){
+    //     res.status(400).send("토큰이 만료되었습니다" )
+    //   } else {
+        // const submitPost = await db.sequelize.query(
+        //   'insert into posts(title, category, description, brand, price, image) values(?,?,?,?,?,?)', {
+        //     replacements: [title, category, description, brand, price, image ],
+        //     type: QueryTypes.INSERT
+        //   }
+        // )
+        // const submitUser = await db.sequelize.query(
+        //   'insert into users(user_id) values(?)', {
+        //     replacements: [user_id],
+        //     type: QueryTypes.INSERT
+        //   }
+        // )
+        // const submitTag = await db.sequelize.query(
+        //   'insert into tags(name) values(?)', {
+        //     replacements: [hashtag],
+        //     type: QueryTypes.INSERT
+        //   }
+        // )
+        // const submitPostTag = await db.sequelize.query(
+        //   `Insert into post_tag (postId, tagId) values(?,?)`, {
+        //     replacements: [submitPost.dataValues.id, submitTag.dataValues.id],
+        //     type: QueryTypes.INSERT
+        //   }
+        // )
+        // const submitPostUser = await db.sequelize.query(
+        //   `Insert into post_user (postId, userId) values(?,?)`, {
+        //     replacements: [submitPost.dataValues.id, submitUser.dataValues.id],
+        //     type: QueryTypes.INSERT
+        //   }
+        // )
+        const submitPost = await post.create({
           title: title,
           category: category,
           description: description,
           brand: brand,
           price: price,
-          image: image // 이미지 어떻게 할지 더 고민 필요
+          image: image,
+          createdAt: new Date()
         })
-        if(submitPost){
-          res.status(200).send('데이터 추가 완료')
-        } else {
-          res.status(400).send('데이터 추가 실패')
-        }
-      }  
-      //req.body의 정보들을 userDB에 업데이트
-      //수정된 데이터가 있을때만 업데이트, 없으면 x 
-      // if(req.body.nickname){
-      //   userInfo.nickname=req.body.nickname
-      // }
-      // if(req.body.email){
-      //   userInfo.email=req.body.email
-      // }
-      // if(req.body.password){
-      //   userInfo.password=req.body.password
-      // }
-      // if(req.body.photo){
-      //   userInfo.photo=req.body.photo
-      // }
+        const submitUser = await user.create({
+          user_id: user_id
+        })  
+        const submitTag = await tag.create({
+          name: hashtag
+        })
+        // posts, users, tags 각각의 테이블에 데이터가 추가되지만 조인 관계가 설립 안 됨 (조인테이블 데이터 X)
+        // const getPostId = submitPost.dataValues.id;
+        // const getUserId = submitUser.dataValues.id;
+        // const getTagId = submitTag.dataValues.id;
 
-      // await userInfo.save()
+        // const submitPostUser = await post_user.create({
+        //   postId: getPostId,
+        //   userId: getUserId
+        // })
+        // const submitPostTag = await post_tag.create({
+        //   postId: getPostId,
+        //   tagId: getTagId
+        // })
 
-      // res.status(200).send(userInfo)
-      //   }
-      // }else if(!accessTokenData){
-      //   res.status(401).send("토큰이 만료되었습니다")
-      // }
-      // else{
-      //   res.status(500).send("err");
-      // }
+  
+        if(submitPost && submitUser && submitTag && submitPostUser && submitPostTag){
+          const allPosts = await post.findAll({
+            attributes: ['id', 'title', 'category', 'description', 'brand', 'price', 'image'],
+            include: [{
+              model: user,
+              attributes: ['user_id', 'user_image']
+            },{
+              model: tag,
+              attributes: ['name']
+            }],
+            order:[['createdAt', 'asc']]
+          })
+          if(allPosts){
+            res.status(200).send(allPosts)
+          } else {
+            res.status(500).send('err')
+          }
+    
+          // const data = await db.sequelize.query(
+          //   `select posts.id, posts.title, posts.category, posts.description,
+          //   posts.brand, posts.price, posts.image, users.nickname, users.user_image from posts, users
+          //   where posts.title like :searchWord`, {
+          //     type: QueryTypes.SELECT
+          //   }
+          // )
+        }  
+      //}  
+    //}
+  },
+
+  requestController: async (req, res) => {
+    // /item/request (post)
+    // `select requestlists.userId, posts.id from requestlists, posts
+    // join posts on posts.id = requestlists`
+    const { userId, postId } = req.body;
+    const request = await requestlist.findAll({
+      where: {
+        userId: userId, 
+        postId: postId
+      },
+      include: [{
+        model: post,
+        attributes: ['id']
+      }]
+    })
+    if(!request){
+      res.status(500).send("err")
+    } else {
+      console.log(request)
+      res.status(200).send(request)
     }
 
-
-    // //토큰 있는지 확인
-// const accessTokenData = isAuthorized(req);
-// //console.log(accessTokenData)
-
-
-//     if(accessTokenData){
-//       const { user_id } = accessTokenData;
-
-//       //console.log(itemInfo[0].dataValues)//해당 유저 정보
-//       //console.log(itemInfo[0].dataValues.posts)//해당 유저의 포스트
-//       //기본적으로 배열 안에 리스트업->where로 인덱스[n] 구체화 시키면 해결
-
-//       //todo
-//       //🔵해당 유저가 가진 포스트 리스트업
-//       //🔵그 포스트의 해쉬태그
-//       //🔴그 포스트의 카테고리(머지하면 가능)
-
-
-// //해당유저와 포스트 및 태그//////////////////////////////////////
-// const itemInfo = await user.findAll({
-//   include:{
-//     model:post,
-//     include:[{
-//       model:tag
-//     },{
-//       model:category
-//     }]
-//   },
-//   where:{user_id: user_id}
-//  })
-
-// //ps.forEach(ps => console.log(ps.toJSON()))
-// //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
-
-// res.status(200).send({
-//   data:itemInfo
-// })
-//     }else if(!accessTokenData){
-//       res.status(401).send("토큰이 만료되었습니다")
-//     }
-//     else{
-//       res.status(500).send("err");
-
-//     }
-
-
-//   },
-
-
-
   },
-
-  requestController: (req, res) => {
-    // /item/request (post)
-  },
-  idController: (req, res) => {
+  idController: async (req, res) => {
     // /item/:id (get)
+    // if(accessTokenData){
+    //   const { user_id } = accessTokenData;
+    
+    //   const userInfo = await user.findOne({
+    //     where : {user_id}
+    //   })
+    //   if(!userInfo){
+    //     res.status(400).send("토큰이 만료되었습니다" )
+    //   } else {
+        const selectedPost = await post.findByPk(req.params.id, {
+          include: [{
+            model: user,
+            attributes: ['nickname', 'user_image']
+          },{
+            model: tag,
+            attributes: ['name']
+          }]
+        })
+        if(!selectedPost){
+          res.status(404).send("게시물을 찾을 수 없습니다")
+        } else {
+          console.log(selectedPost)
+          res.status(200).send({
+            id: selectedPost.dataValues.id,
+            nickname: selectedPost.dataValues.users.nickname,
+            user_image: selectedPost.dataValues.users.user_image,
+            title: selectedPost.dataValues.title,
+            category: selectedPost.dataValues.category,
+            description: selectedPost.dataValues.description,
+            brand: selectedPost.dataValues.brand,
+            price: selectedPost.dataValues.price,
+            hashtag: selectedPost.dataValues.tags,
+            image: selectedPost.dataValues.image,
+            createdAt: selectedPost.dataValues.createdAt,
+            updatedAt: selectedPost.dataValues.updatedAt
+          })
+        }
+      // }
+    // }  
   }
+
 };
