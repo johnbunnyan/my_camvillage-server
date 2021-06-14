@@ -34,13 +34,6 @@ module.exports = {
   },
 
   searchController: async (req, res) => {
-<<<<<<< HEAD
-   
-
-
-    const { category, queryString } = req.body;
-=======
->>>>>>> 7b7d05d5931bceb8fbb9621e11d3c1c3c1e9c24e
 
     // try {
       const { category, queryString } = req.body;
@@ -145,42 +138,6 @@ module.exports = {
         } else {
           res.status(500).send('error message');
         }
-<<<<<<< HEAD
-      )
-      if(searchHashtag){
-        res.status(200).send(searchHashtag)
-      } else {
-        res.status(400).send('error message');
-      }
-    }
-    // const searchInfo = await db.sequelize.query(
-    //    `select * from users
-    //    where users.nickname like :searchWord` , {
-    //      replacements: {searchWord: req.body.searchWord},
-    //      type: QueryTypes.SELECT
-    //    }
-    // )
-    // if(searchInfo){
-    //   res.status(200).send(searchInfo);
-    // } else {
-    //   res.status(400).send('error message')
-    // }
-
-   
- 
-    // const searchInfo = await db.sequelize.query(
-    //    `select * from users
-    //    where users.nickname like :searchWord` , {
-    //      replacements: {searchWord: req.body.searchWord},
-    //      type: QueryTypes.SELECT
-    //    }
-    // )
-    // if(searchInfo){
-    //   res.status(200).send(searchInfo);
-    // } else {
-    //   res.status(400).send('error message')
-    // }
-=======
       }
 
       
@@ -228,7 +185,6 @@ module.exports = {
   
     // } catch(error){
     //   res.status(500).send('error')
->>>>>>> 7b7d05d5931bceb8fbb9621e11d3c1c3c1e9c24e
 
     // }
   }  
