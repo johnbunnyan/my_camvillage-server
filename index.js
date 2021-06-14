@@ -21,7 +21,7 @@ const port = 4000;
 app.use(express.json()); //req.body 접근하게 해주는 미들웨어
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-  origin: 'https://localhost:3000',
+  origin: 'http://localhost:3000',
   methods: ['GET, POST, OPTIONS'],
   credentials: true
 }));

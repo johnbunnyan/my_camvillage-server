@@ -343,7 +343,11 @@ else{
         ]
       }
     }],
+<<<<<<< HEAD
      //]through:'post_user'
+=======
+     through:'post_user'
+>>>>>>> 7b7d05d5931bceb8fbb9621e11d3c1c3c1e9c24e
     },
     where:{user_id: user_id}
     }
