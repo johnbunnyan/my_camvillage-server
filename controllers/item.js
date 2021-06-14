@@ -50,18 +50,7 @@ module.exports = {
         //     type: QueryTypes.INSERT
         //   }
         // )
-        // const submitPostTag = await db.sequelize.query(
-        //   `Insert into post_tag (postId, tagId) values(?,?)`, {
-        //     replacements: [submitPost.dataValues.id, submitTag.dataValues.id],
-        //     type: QueryTypes.INSERT
-        //   }
-        // )
-        // const submitPostUser = await db.sequelize.query(
-        //   `Insert into post_user (postId, userId) values(?,?)`, {
-        //     replacements: [submitPost.dataValues.id, submitUser.dataValues.id],
-        //     type: QueryTypes.INSERT
-        //   }
-        // )
+
         const submitPost = await post.create({
           title: title,
           category: category,
@@ -77,7 +66,20 @@ module.exports = {
         const submitTag = await tag.create({
           name: hashtag
         })
-        // posts, users, tags 각각의 테이블에 데이터가 추가되지만 조인 관계가 설립 안 됨 (조인테이블 데이터 X)
+        const submitPostTag = await db.sequelize.query(
+          `Insert into post_tag (postId, tagId) values(?,?)`, {
+            replacements: [submitPost.dataValues.id, submitTag.dataValues.id],
+            type: QueryTypes.INSERT
+          }
+        )
+        const submitPostUser = await db.sequelize.query(
+          `Insert into post_user (postId, userId) values(?,?)`, {
+            replacements: [submitPost.dataValues.id, submitUser.dataValues.id],
+            type: QueryTypes.INSERT
+          }
+        )
+        
+        //posts, users, tags 각각의 테이블에 데이터가 추가되지만 조인 관계가 설립 안 됨 (조인테이블 데이터 X)
         // const getPostId = submitPost.dataValues.id;
         // const getUserId = submitUser.dataValues.id;
         // const getTagId = submitTag.dataValues.id;
@@ -91,19 +93,20 @@ module.exports = {
         //   tagId: getTagId
         // })
 
-  
         if(submitPost && submitUser && submitTag && submitPostUser && submitPostTag){
-          const allPosts = await post.findAll({
-            attributes: ['id', 'title', 'category', 'description', 'brand', 'price', 'image'],
-            include: [{
-              model: user,
-              attributes: ['user_id', 'user_image']
-            },{
-              model: tag,
-              attributes: ['name']
-            }],
+          const allPosts = await user.findAll({
+            include: {
+              model: post,
+              include: [
+                {
+                  model: tag,
+                  through: {} 
+                }
+              ]
+            },
             order:[['createdAt', 'asc']]
-          })
+          });
+
           if(allPosts){
             res.status(200).send(allPosts)
           } else {
