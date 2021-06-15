@@ -3,6 +3,11 @@
  require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
 
+ //이미지 관련 모듈🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+ const multer = require("multer");
+const upload = multer({dest:'uploads/'}) //자동으로 보관폴더 만들어줌
+const fs = require('fs')
+//🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
 
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
@@ -12,7 +17,8 @@
   resendAccessToken,
   checkRefeshToken
   
-} =require('./tokenMethod')
+} =require('./tokenMethod');
+
 
 module.exports = {
   
@@ -156,15 +162,15 @@ else if(!userInfo){
   nickname:req.body.nickname,
   user_image:req.body.user_image,
   name:req.body.name,
-  user_image:null
+ 
 
 })
 //회원가입 정보 DB에 저장하면서 토큰 만들어 주기
 //console.log(saveInfo)
 const {id, user_id, name,email,nickname, user_image,createdAt, updatedAt} = saveInfo
       //console.log(nickname)
-      const accessToken = generateAccessToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
-      const refreshToken = generateRefreshToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
+      const accessToken = generateAccessToken({id, user_id, name,email,nickname,createdAt, updatedAt})//토큰에 이미지 넣으면 길이엄청길어짐
+      const refreshToken = generateRefreshToken({id, user_id, name,email,nickname,createdAt, updatedAt})
       //console.log(accessToken)
      //리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
 
@@ -431,7 +437,7 @@ for(let i=0;i<requestedInfo[0].posts.length;i++){
 
 
   alterController: async (req, res) => {
-
+console.log(req.file)
 
     //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
@@ -446,17 +452,32 @@ if(accessTokenData){
   if(!userInfo){
     res.status(400).send("토큰이 만료되었습니다" )
   }else{
-//req.body의 정보들을 userDB에 업데이트
-//수정된 데이터가 있을때만 업데이트, 없으면 x 
- 
 
-userInfo.nickname=req.body.nickname
+
+
+  userInfo.nickname=req.body.nickname
   userInfo.email=req.body.email
   userInfo.password=req.body.password
-  userInfo.user_image=req.body.user_image
+
+
+
+  //이미지를 DB로 넣는 상황🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+
+//1. url로 받는 경우
+//-> 이미지 이런식으로 올것 'http://t1.daumcdn.net/friends/prod/editor/dc8b3d02-a15a-4afa-a88b-989cf2a50476.jpg'
+  //userInfo.user_image=req,body.user_image
+
+//2. 이미지채로 받는 경우
+//🏞일단은 서버폴더에 받아놓은 이미지를 db로 보내기 위해 해당 폴더에서 끄집어내는데 지금 blob형태를 base64형태로 바꾼다
+ const imgData =fs.readFileSync(req.file.path).toString("base64")
+// console.log(imgData)
+//이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
+//근데 우리는 url로 받기로 했으니 위 과정은 필요없음!!
+userInfo.user_image=imgData
+
+//🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
 
 await userInfo.save()
-
 
 res.status(200).send({
   id:userInfo.dataValues.id, 

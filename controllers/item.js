@@ -148,6 +148,48 @@ module.exports = {
     }
 
   },
+  confirmationController: async (req, res) => {
+//이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
+//각 컨퍼메이션을 db에 업데이트만 해주면 끝
+    const accessTokenData = isAuthorized(req);
+console.log(accessTokenData)
+    if(accessTokenData){
+
+    const { confirmation, post_id, user_id } = req.body;
+    const confirm = await requestlist.findOne({
+      where: {postId:post_id, userId:user_id},
+      // include: [{
+      //   model: post,
+      //   attributes: ['id']
+      // }]
+    })
+if(!confirm){
+  res.status(402).send("신청되지 않은 품목입니다")
+}else{
+  confirm.confirmation = confirmation
+
+  await confirm.save()
+
+  res.status(200).send("응답을 보냈습니다")
+}
+
+
+
+
+    if(!confirm){
+      res.status(500).send("err")
+    } else {
+      console.log(confirm)
+      res.status(200).send(confirm)
+    }
+  }else{
+    res.status(500).send('err')
+  }
+  },
+
+
+
+
   idController: async (req, res) => {
     // /item/:id (get)
     // if(accessTokenData){
