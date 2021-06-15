@@ -58,7 +58,7 @@ module.exports = {
       //res의 _header에 Set-Cookie키 안에 refreshToken들어감
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-      }).status(200).json({accessToken:accessToken, data:{id, user_id, email,nickname, image,createdAt, updatedAt}} )
+      }).status(200).json({accessToken:accessToken, id, user_id, email,nickname, image,createdAt, updatedAt} )
     }else{
       res.status(500).send("err");
 
@@ -67,7 +67,40 @@ module.exports = {
 
 },
 
+  googleLoginController: async (req, res) => {
+    //  user/login/google (post)
+    const { user_id, nickname, email } = req.body;
+    const googleToken = req.header.authorization.split(' ')[1];
 
+    // db에 저장되어 있는지 조회
+    const googleInfo = await user.findOne({ 
+      where: {
+        user_id: user_id,
+        nickname: nickname,
+        email: email,
+        google: "1"  // users 테이블에 google 필드 추가 : "1"이면 구글로그인
+      }
+    })
+    //저장되어 있지 않다면 데이터를 users 테이블에 저장
+    if(!googleInfo){
+      const createInfo = await user.create({
+        user_id: user_id,
+        nickname: nickname,
+        email: email,
+        google: "1"
+      }) 
+      res.status(200).send(createInfo) 
+    }  
+    
+    if(googleInfo && googleToken){  
+      res.status(200).send(googleToken, googleInfo)
+      //refresh없음
+      //어차피 토큰이 자체 생성이냐 구글 생성이냐의 차이만 있지 저장되어 있는 곳은 일치하니 로그아웃 로직은 똑같이 적용
+      // 로그아웃시 headers.authorization의 토큰 삭제
+    } else {
+      res.status(500).send("err");
+    }
+  },
 
 logoutController: (req, res) => {
   //console.log(req.body)
@@ -87,7 +120,7 @@ const accessTokenData = isAuthorized(req)
 
 if(!accessTokenData){
   res.status(400).send("로그인을 해 주세요")
-}else{
+}else if(acccessTokenData){
   //쿠키에 담겨있는 토큰을 없애면 로그아웃 되는 거
   //req.headers["authorization"]에 들어있는 액세스 토큰
  //Set-Cookie에 들어있는 리프레쉬 토큰
@@ -96,6 +129,8 @@ if(!accessTokenData){
   res.clearCookie('refreshToken') //쿠키지워서 리프레쉬 토큰 없애기
  //console.log(req)
   res.status(200).send("성공적으로 로그아웃 하였습니다") 
+} else {
+  res.status(500).send('err')
 }
 
   
@@ -182,177 +217,78 @@ res.cookie("refreshToken", refreshToken, {
 
   },
 
-  mypageController: async (req, res) => {
-  //get
-    //req token
-//res
-// 200 {
-//   "id": PK,
-//   "user_id": "user_id",
-//   "email": "email",
-//   "password": "password",
-//   "nickname": "nickname",
-//   "image": "default image",
-//   "createdAt": "created time",
-//   "updatedAt": "updated time"
-// }
-//400 { "토큰이 만료되었습니" }
-//500 err
-
-//토큰 있는지 확인
-const accessTokenData = isAuthorized(req);
-
-
-    if(accessTokenData){
-      const { user_id } = accessTokenData;
-     
-      const giveInfo = await user.findOne({
-        where : {user_id}
-      })
-      console.log(giveInfo);
-
-      if(!giveInfo){
-        return res.status(400).send("토큰이 만료되었습니다")
-      }else{
-        res.status(200).json({
-          id:giveInfo.dataValues.id, 
-          user_id:giveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
-          email:giveInfo.dataValues.email,
-          nickname:giveInfo.dataValues.nickname,
-          image:giveInfo.dataValues.default_image, //디폴트 이미지 저장 및 제공방법 고민하기
-          createdAt:giveInfo.dataValues.createdAt,
-          updatedAt:giveInfo.dataValues.updatedAt,
-        })  
-      }
-
-    }else if(!accessTokenData){
-      
-      res.status(401).send("토큰이 만료되었습니다")
-
-    }else{
-    res.status(500).send("err");
-    }
-  },
-
-
-
-//   itemController: async (req, res) => {
-    
-
-//   //get
-//     //req token
-//   //
-// //   200 {
-// //     items: [{
-// //             "id": PK,
-// //             "user_id": "user_id",
-// //             "title": "title",
-// //             "hashtag": "hashtag",
-// //             "photo": "photo",
-// //             "category_id": "category_id",
-// //             "brand": "brand",
-// //             "price": "price",
-// //             "info": "info,
-// //             "createdAt": "createdAt",
-// //             "updatedAt": "updatedAt"
-// //         },
-// //         ...
-// //         ]
-// // }
-// //500 err
-
-// //토큰 있는지 확인
-// const accessTokenData = isAuthorized(req);
-// //console.log(accessTokenData)
-
-
-//     if(accessTokenData){
-//       const { user_id } = accessTokenData;
-
-//       //console.log(itemInfo[0].dataValues)//해당 유저 정보
-//       //console.log(itemInfo[0].dataValues.posts)//해당 유저의 포스트
-//       //기본적으로 배열 안에 리스트업->where로 인덱스[n] 구체화 시키면 해결
-
-//       //todo
-//       //🔵해당 유저가 가진 포스트 리스트업
-//       //🔵그 포스트의 해쉬태그
-//       //🔴그 포스트의 카테고리(머지하면 가능)
-
-
-// //해당유저와 포스트 및 태그//////////////////////////////////////
-// const itemInfo = await user.findAll({
-//   include:{
-//     model:post,
-//     include:[{
-//       model:tag
-//     },{
-//       model:category
-//     }]
-//   },
-//   where:{user_id: user_id}
-//  })
-
-// //ps.forEach(ps => console.log(ps.toJSON()))
-// //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
-
-// res.status(200).send({
-//   data:itemInfo
-// })
-//     }else if(!accessTokenData){
-//       res.status(401).send("토큰이 만료되었습니다")
-//     }
-//     else{
-//       res.status(500).send("err");
-
-//     }
-
-
-//   },
-
   requestController: async (req, res) => {
-  //post
-    //req token
-//
-// 200 {
-//   request: [
-//       {
-//           "id": PK,
-//           "user_id": "user_id",
-//           "title": "title",
-//           "photo": "photo",
-//           "confirmation": 0, // 0: no response, 1: yes, 2: no
-//           "createdAt": "createdAt",
-//           "updatedAt": "updatedAt"
-//       },
-//       ...
-//   ]
-// }
-//500 err
-
-//여기 메서드에서 줄 데이터 그룹-3개
-//postId(나)의 게시물 정보와 나의 userId/그리고 userId(신청유저) / 컨퍼메이션
+  //   request: [
+  //     {
+  //         "id": PK,
+  //         "userId": my id,
+  //         // 물건 올린 사람 id
+  
+  
+  //          "title": "title",
+  //         "image": "image",
+  //         "confirmation": '0', // '0': no response, '1': yes, '2': no
+  //         "createdAt": "createdAt",
+  //         "updatedAt": "updatedAt"
+  //     },
+  //     ...
+  // ]
 
 const accessTokenData = isAuthorized(req);
 
 if(accessTokenData){
+  //const { user_id } = accessTokenData;
   const { user_id } = accessTokenData;
-
+//console.log(user_id)
 
 //해당유저와 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
 const requestInfo = await requestlist.findAll({
-// include:{
-// model:post,
-// through:{}
-// },
-// where:{user_id: user_id}
+include:{
+model:post,
+include:[{
+  model:user
+}],
+//through:{}
+},
+ where:{userId: user_id}
 })
 
 //ps.forEach(ps => console.log(ps.toJSON()))
 //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
 
 
+// {
+//   id: requestInfo[0].id,
+//   userId: requestInfo[0].post.users[0].user_id,
+//   title: requestInfo[0].post.title,
+//   image: requestInfo[0].post.image,
+//   confirmation: requestInfo[0].confirmation, // '0': no response, '1': yes, '2': no
+//   createdAt: requestInfo[0].createdAt,
+//   updatedAt: requestInfo[0].updatedAt
+// }
+//공통된 것은 id밖에 없다
+//requestInfo 는 배열이니까 하나씩 뽑아내서 아래 형식으로 보내주면 됨
+
+
+
+const pacakage=requestInfo.map((el)=>{
+return {
+          id: el.id,
+          userId: el.post.users[0].user_id,
+          title: el.post.title,
+          image: el.post.image,
+          confirmation: el.confirmation, // '0': no response, '1': yes, '2': no
+          createdAt: el.createdAt,
+          updatedAt: el.updatedAt
+      }
+    }
+)
+// console.log(pacakage)
+// console.log(requestInfo)
+
+
 res.status(200).send({
-data:requestInfo
+  request:pacakage
 })
 }else if(!accessTokenData){
   res.status(401).send("토큰이 만료되었습니다")
@@ -361,76 +297,146 @@ else{
   res.status(500).send("err");
 }
 
+
   },
 
+
+
+//👉나의 게시물을 다른 유저가 신청했을 때
+//post_user에서 내 아이디로 내 게시물id찾고 
+//그 게시물id를 requestlists로 가져가서 해당되는 로우 있는지 확인하고 그 게시물 정보 가져오고
+//있으면 그 로우의 userId(신청한사람)유저아이디 가져오기
   requestedController: async (req, res) => {
-  //get
-      //req token
-    //res
-  //   200 {
-  //     requested: [
-  //         {
-  //             "id": PK,
-  //             "user_id": "user_id",
-  //             "title": "title",
-  //             "photo": "photo",
-  //             "confirmation": 0, // 0: no response, 1: yes, 2: no
-  //             "createdAt": "createdAt",
-  //             "updatedAt": "updatedAt"
-  //         },
-  //         ...
-  //     ]
-  // }
-  //500 err
+    const accessTokenData = isAuthorized(req);
 
-  const accessTokenData = isAuthorized(req);
-
-  if(accessTokenData){
-    const { user_id } = accessTokenData;
-
-    //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
-  const requestedInfo = await user.findAll({
-    include:{
-    model:post,
-     through:{}
-    },
-    where:{user_id: user_id}
-    })
+    if(accessTokenData){
+      const { user_id } = accessTokenData;
   
-    //ps.forEach(ps => console.log(ps.toJSON()))
-    //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+      //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
+    // const requestedInfo = await user.findAll(
+    //   {
+    //   include:{
+    //   model:post,
+    //   include:[{
+    //     model:requestlist, 
+    //     //attributes:['confirmation']
+    //     where: {
+    //       [Op.or]:[
+    //         {confirmation:'0'},
+    //         {confirmation:'1'},
+    //         {confirmation:'2'},
+    //       ]
+    //     }
+    //   }],
+    //    //through:'post_user'
+    //   },
+    //   where:{user_id: user_id}
+    //   }
+    //   )
+  
+    const requestedInfo = await user.findAll(
+      {
+      include:{
+      model:post,
+      include:[{
+        model:requestlist, 
+        attributes:['confirmation','postId','userId','createdAt','updatedAt','id'],
+        where: {
+          [Op.or]:[
+            {confirmation:'0'},
+            {confirmation:'1'},
+            {confirmation:'2'},
+          ]
+        }
+      }],
+       //]through:'post_user'
+      },
+      where:{user_id: user_id}
+      }
+      )
+    
+      //ps.forEach(ps => console.log(ps.toJSON()))
+      //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+    
+  //나는 여러 포스트를 가지고 있고 그 포스트마다 여러 사람이 신청했을 수 있다
+  
+  //1. 조건 
+  //requestedInfo[0].posts.dataValues.requestlists의 내용이 있는 것만
   
   
-    res.status(200).send({
-    data:requestedInfo
-    })
-  }else if(!accessTokenData){
-    res.status(401).send("토큰이 만료되었습니다")
+  //2. 여러 포스트 배열          
+  //requestedInfo[0].posts 
+    //그럼 포스트 기준으로 다 뽑아서 배열 만들어 놓고, 그 배열을 또 map
+  //3. 여러 신청한 사람 배열(기준)
+  //requestedInfo[0].posts.dataValues.requestlists
+  
+  //배열 속에 배열이 있다는 것이 문제
+  
+  let box=[]
+  for(let i=0;i<requestedInfo[0].posts.length;i++){
+    for(let j=0;j<requestedInfo[0].posts[i].dataValues.requestlists.length;j++){
+      let obj={
+        
+        id: requestedInfo[0].id,
+        userId: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.userId , 
+        myId:user_id,
+        title: requestedInfo[0].posts[i].title,
+        image: requestedInfo[0].posts[i].image,
+        confirmation: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.confirmation, 
+        createdAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.createdAt,
+        updatedAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.updatedAt
+    }
+    box.push(obj)
+    }
   }
-  else{
-    res.status(500).send("err");
-  }
-
-
-  },
+  
+  
+  
+  // const pacakage=requestedInfo[0].posts.map((el)=>{
+  //   //console.log(el.dataValues.requestlists.length) 2,1
+  //   for(let i=0;i<el.dataValues.requestlists.length;i++){
+  //     return {
+        
+  //               id: requestedInfo[0].id,
+  //               //나중에 id를 userId로 바꿔야됨
+  //               userId: el.dataValues.requestlists[i].dataValues.userId
+  //               , 
+  //               myId:user_id,
+  //               title: el.title,
+  //               image: el.image,
+  //               confirmation: el.dataValues.requestlists[i].dataValues.confirmation, 
+  //               createdAt: el.dataValues.requestlists[i].dataValues.createdAt,
+  //               updatedAt: el.dataValues.requestlists[i].dataValues.updatedAt
+  //           }
+  
+  //   }
+  //           }
+  //       )
+        
+  
+  
+        console.log(requestedInfo)
+        //console.log(box)
+  
+  
+  
+  
+    
+      res.status(200).send({
+        request:box
+      })
+    }else if(!accessTokenData){
+      res.status(401).send("토큰이 만료되었습니다")
+    }
+    else{
+      res.status(500).send("err");
+    }
+      },
+  
+  
+  
   alterController: async (req, res) => {
-//계속해서 토큰을 확인하는 이유:매 요청은 서로 독립적,유저를 식별해야 해당하는 정보 처리가능  
-
-  //req token(headers) / nickname,email,password,photo(body)
-  //res
-//   200 {
-//     "id": PK,
-//     "user_id": "user_id",
-//     "email": "email",
-//     "password": "password",
-//     "nickname": "nickname",
-//     "image": "image",
-//     "createdAt": "created time",
-//     "updatedAt": "updated time"
-// }
-//401 { "토큰이 만료되었습니다" }
-//500 err
-
+    console.log(req.file)
 
     //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
@@ -445,24 +451,43 @@ if(accessTokenData){
   if(!userInfo){
     res.status(400).send("토큰이 만료되었습니다" )
   }else{
-//req.body의 정보들을 userDB에 업데이트
-//수정된 데이터가 있을때만 업데이트, 없으면 x 
-if(req.body.nickname){
+
+
+
   userInfo.nickname=req.body.nickname
-}
-if(req.body.email){
   userInfo.email=req.body.email
-}
-if(req.body.password){
   userInfo.password=req.body.password
-}
-if(req.body.photo){
-  userInfo.photo=req.body.photo
-}
+
+
+
+  //이미지를 DB로 넣는 상황🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+
+//1. url로 받는 경우
+//-> 이미지 이런식으로 올것 'http://t1.daumcdn.net/friends/prod/editor/dc8b3d02-a15a-4afa-a88b-989cf2a50476.jpg'
+  //userInfo.user_image=req,body.user_image
+
+//2. 이미지채로 받는 경우
+//🏞일단은 서버폴더에 받아놓은 이미지를 db로 보내기 위해 해당 폴더에서 끄집어내는데 지금 blob형태를 base64형태로 바꾼다
+ const imgData =fs.readFileSync(req.file.path).toString("base64")
+// console.log(imgData)
+//이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
+//근데 우리는 url로 받기로 했으니 위 과정은 필요없음!!
+userInfo.user_image=imgData
+
+//🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
 
 await userInfo.save()
 
-res.status(200).send(userInfo)
+res.status(200).send({
+  id:userInfo.dataValues.id, 
+  user_id:userInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
+  name:userInfo.dataValues.name,
+  email:userInfo.dataValues.email,
+  nickname:userInfo.dataValues.nickname,
+  user_image:userInfo.dataValues.user_image, //디폴트 이미지 저장 및 제공방법 고민하기
+  createdAt:userInfo.dataValues.createdAt,
+  updatedAt:userInfo.dataValues.updatedAt
+})
   }
 }else if(!accessTokenData){
   res.status(401).send("토큰이 만료되었습니다")
@@ -474,4 +499,75 @@ else{
 
 
   },
+
+
+  refreshController: async (req, res) => {
+        //토큰 있는지 확인
+        const accessTokenData = isAuthorized(req);
+    
+    
+        if(accessTokenData){
+          const { user_id } = accessTokenData;
+         
+          const userInfo = await user.findOne({
+            where : {user_id}
+          })
+          if(!userInfo){
+            res.status(400).send("유저정보가 없습니다" )
+          }else{
+       
+        res.status(200).send(userInfo)
+          }
+    
+    
+    
+        }else if(!accessTokenData){
+          const refreshToken = req.headers.cookie.slice(13)
+          //console.log(req.headers.cookie.slice(13))
+    
+          if (!refreshToken) {
+            return res.json({ data: null, message: '리프레쉬 토큰이 만료되었습니다' });
+          }else{
+    
+            const refreshTokenData = checkRefeshToken(refreshToken);
+            if (!refreshTokenData) {
+              return res.json({
+                message: '유효하지 않는 리프레쉬 토큰입니다. 다시 로그인 해주세요.',
+              });
+            }
+          
+            const { user_id } = refreshTokenData;
+            user.findOne({ where: { user_id:user_id } })
+              .then((data) => {
+                if (!data) {
+                  return res.json({
+                    data: null,
+                    message: 'refresh token has been tempered',
+                  });
+                }
+                //delete data.dataValues.password;
+          //console.log(data.dataValues)
+                const newAccessToken = generateAccessToken(data.dataValues);
+                resendAccessToken(res, newAccessToken);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+    
+    
+    
+    
+          }
+    
+         
+        }
+        else{
+          res.status(500).send("err");
+        }
+        
+        
+        
+  
+  }
+
 };
