@@ -15,8 +15,10 @@ const controller = require('../controllers/item');
 
 router.post('/upload', controller.uploadController);
 router.post('/request', controller.requestController);
+router.put('/confirmation', controller.confirmationController);
 router.get('/:id', controller.idController);
-router.put('/confirmation', controller.confirmationController)
+
 //router.post('/image', upload.single('image'), controller.imageUploadConroller) // image는 클라이언트 태그 name 속성
+
 
 module.exports = router;
