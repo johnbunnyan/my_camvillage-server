@@ -94,7 +94,7 @@ module.exports = {
         // })
 
         if(submitPost && submitUser && submitTag && submitPostUser && submitPostTag){
-          const allPosts = await user.findAll({
+          const allPosts = await user.findOne({
             include: {
               model: post,
               include: [
@@ -102,9 +102,11 @@ module.exports = {
                   model: tag,
                   through: {} 
                 }
-              ]
+              ],
+              where: {
+                id : submitPost.dataValues.id
+              }
             },
-            order:[['createdAt', 'asc']]
           });
 
           if(allPosts){
@@ -127,27 +129,39 @@ module.exports = {
 
   requestController: async (req, res) => {
     // /item/request (post)
-    // `select requestlists.userId, posts.id from requestlists, posts
-    // join posts on posts.id = requestlists`
-    const { userId, postId } = req.body;
-    const request = await requestlist.findAll({
-      where: {
-        userId: userId, 
-        postId: postId
-      },
-      include: [{
-        model: post,
-        attributes: ['id']
-      }]
-    })
-    if(!request){
+    
+    const { post_id, user_id } = req.body; 
+    const requested = await db.sequelize.query(
+      `Insert into requestlists (postId, userId, confirmation, createdAt) values(?,?,?,?)`, {
+        replacements: [post_id, user_id, '0', new Date()],
+        type: QueryTypes.INSERT
+      }
+    )
+    // const requested = await requestlist.create({
+    //   postId: post_id,  // 클릭한 post의 id  (숫자)
+    //   userId: user_id, // 신청한 사람의 아이디명 (string)
+    //   createdAt: new Date(),
+    //   confirmation: "0"  // 디폴트 값으로 승낙도 거절도 아니고 신청했다는 의미
+    // })
+
+    // const requestAnswer = await requestlist.findAll({
+    //   attributes: ['id', 'userId', 'postId', 'createdAt', 'confirmation'],
+    //   where: {
+    //     confirmation: '0'
+    //   }
+    // })
+
+    if(!requested){
       res.status(500).send("err")
     } else {
-      console.log(request)
-      res.status(200).send(request)
+      console.log(requested)
+      res.status(200).send(requested)
     }
+  },
+  confirmationController: async (req, res) => {
 
   },
+<<<<<<< HEAD
   confirmationController: async (req, res) => {
 //이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
 //각 컨퍼메이션을 db에 업데이트만 해주면 끝
@@ -189,6 +203,8 @@ if(!confirm){
 
 
 
+=======
+>>>>>>> 8c7f1565494b98e2328f66889c39c06416ffed08
 
   idController: async (req, res) => {
     // /item/:id (get)
