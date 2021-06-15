@@ -1,6 +1,9 @@
 const { user, post, mainslide, tag } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 const sequelize = require('sequelize');
 const Op = sequelize.Op
+
+
+
 const { QueryTypes } = require('sequelize');
 
 const db = require('../models/index');
@@ -12,9 +15,8 @@ const {isAuthorized,//토큰 있는지 없는지 확인
   sendAccessToken,
   resendAccessToken,
   checkRefeshToken
-  
-} =require('./tokenMethod');
 
+} =require('./tokenMethod');
 
 module.exports = {
   
@@ -32,11 +34,13 @@ module.exports = {
   },
 
   searchController: async (req, res) => {
+
     // try {
       const { category, queryString } = req.body;
       // const query =  `select posts.id, posts.title, posts.category, posts.description,
       // posts.brand, posts.price, posts.image, users.nickname, users.user_image from users, posts
       // where posts.title like :searchWord`
+
 
       if(category === 'title'){
         // const searchWord = await db.sequelize.query(query, {
@@ -135,6 +139,7 @@ module.exports = {
           res.status(500).send('error message');
         }
       }
+
       
       //  /search?searchType=nickname&searchWord=jordan
       // const { searchType, searchWord } = req.query;
@@ -180,6 +185,7 @@ module.exports = {
   
     // } catch(error){
     //   res.status(500).send('error')
+
     // }
   }  
 };
