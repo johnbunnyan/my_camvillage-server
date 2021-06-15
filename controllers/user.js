@@ -85,9 +85,9 @@ logoutController: (req, res) => {
  // localStorage 토큰 저장 시 클라이언트에서 localStorage에서 removeItem으로 삭제하면 됨
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
-//console.log(req)
-const accessTokenData = isAuthorized(req)
-//console.log(accessTokenData)
+// console.log(req.body.headers)
+const accessTokenData = isAuthorized(req.body)
+// console.log(accessTokenData)
 
 if(!accessTokenData){
   res.status(400).send( "로그인을 해 주세요" )
@@ -225,9 +225,9 @@ res.cookie("refreshToken", refreshToken, {
   //     },
   //     ...
   // ]
-
+console.log(req.headers)
 const accessTokenData = isAuthorized(req);
-
+console.log(req.body)
 if(accessTokenData){
   //const { user_id } = accessTokenData;
   const { user_id } = accessTokenData;
