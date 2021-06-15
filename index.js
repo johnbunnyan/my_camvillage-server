@@ -22,11 +22,7 @@ app.use(express.json()); //req.body 접근하게 해주는 미들웨어
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
   origin: 'http://localhost:3000',
-<<<<<<< HEAD
-  methods: ['GET, POST, PUT, OPTIONS'],
-=======
   methods: ['GET, POST, OPTIONS', 'PUT'],
->>>>>>> 8c7f1565494b98e2328f66889c39c06416ffed08
   credentials: true
 }));
 

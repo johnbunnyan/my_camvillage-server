@@ -161,7 +161,6 @@ module.exports = {
   confirmationController: async (req, res) => {
 
   },
-<<<<<<< HEAD
   confirmationController: async (req, res) => {
 //이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
 //각 컨퍼메이션을 db에 업데이트만 해주면 끝
@@ -203,8 +202,6 @@ if(!confirm){
 
 
 
-=======
->>>>>>> 8c7f1565494b98e2328f66889c39c06416ffed08
 
   idController: async (req, res) => {
     // /item/:id (get)
