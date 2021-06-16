@@ -7,6 +7,9 @@ const db = require('../models/index');
 require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
+ const fs = require('fs')
+ const sharp = require('sharp')
+
 
  const {isAuthorized,//토큰 있는지 없는지 확인
   generateAccessToken,
@@ -51,6 +54,13 @@ module.exports = {
         //     type: QueryTypes.INSERT
         //   }
         // )
+// console.log(req.file.path)
+
+        const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`).toString("base64")
+         console.log(imgData)
+        //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
+      
+
 
         const submitPost = await post.create({
           title: title,
@@ -58,16 +68,15 @@ module.exports = {
           description: description,
           brand: brand,
           price: price,
-          image: image,
+//image는 post에 base64형식으로 변환되서 저장되는 거 확인
+          image: req.file.path,
           createdAt: new Date()
         })
         const findUser = await user.findOne({
           where: {
             user_id: user_id
-
-          }  
-        })  
-
+          }
+        })
         const submitTag = await tag.create({
           name: hashtag
         })
@@ -83,21 +92,6 @@ module.exports = {
             type: QueryTypes.INSERT
           }
         )
-
-        //posts, users, tags 각각의 테이블에 데이터가 추가되지만 조인 관계가 설립 안 됨 (조인테이블 데이터 X)
-        // const getPostId = submitPost.dataValues.id;
-        // const getUserId = submitUser.dataValues.id;
-        // const getTagId = submitTag.dataValues.id;
-
-        // const submitPostUser = await post_user.create({
-        //   postId: getPostId,
-        //   userId: getUserId
-        // })
-        // const submitPostTag = await post_tag.create({
-        //   postId: getPostId,
-        //   tagId: getTagId
-        // })
-
 
         if(submitPost && findUser && submitTag && submitPostUser && submitPostTag){
           const allPosts = await user.findOne({
@@ -115,22 +109,6 @@ module.exports = {
               }
             },
           });
-          // const allPosts = await post.findOne({
-          //   include: [{
-          //     model: user,
-          //     attributes: ['nickname', 'user_image'],
-          //     through: 'post_user',
-          //     where: {
-          //       user_id: submitUser.dataValues.user_id
-          //     }
-          //   },{
-          //     model: tag,
-          //     attributes: ['name'],
-          //   }],
-          //   where: {
-          //     id : submitPost.dataValues.id
-          //   }
-          // });
 
           if(allPosts){
             res.status(200).send(allPosts)
@@ -139,10 +117,6 @@ module.exports = {
           }
         }
   },
-  // imageController: async (req, res) => {
-  //  const image = req.file
-  //  res.status(200).send(image)  
-  // },
 
   requestController: async (req, res) => {
     // /item/request (post)
@@ -162,8 +136,6 @@ module.exports = {
       //   attributes: ['id']
       // }]
     })
-
-
     // const requested = await requestlist.create({
     //   postId: post_id,  // 클릭한 post의 id  (숫자)
     //   userId: user_id, // 신청한 사람의 아이디명 (string)
@@ -187,14 +159,13 @@ module.exports = {
   },
  
   confirmationController: async (req, res) => {
-
-    //이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
-    //각 컨퍼메이션을 db에 업데이트만 해주면 끝
+//이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
+//각 컨퍼메이션을 db에 업데이트만 해주면 끝
     const accessTokenData = isAuthorized(req);
-    console.log(accessTokenData)
-        if(accessTokenData){
+console.log(accessTokenData)
+    if(accessTokenData){
 
-        const { confirmation, id, userId } = req.body; 
+        const { confirmation, post_id, user_id } = req.body; 
 
         const confirm = await requestlist.findOne({
           where: {postId:post_id, userId:user_id},
@@ -212,13 +183,11 @@ module.exports = {
       await requestlist.destroy({
         where: {
           [Op.and]: {
-            post: id,
+            postId: post_id,
             userId: {
-              [Op.ne]: userId,
+              [Op.ne]: user_id,
             },
-            confirmation: {
-              [Op.ne]: "1"
-            }  
+             
           }
         }
       })
