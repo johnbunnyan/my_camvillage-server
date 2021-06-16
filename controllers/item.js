@@ -54,7 +54,7 @@ module.exports = {
         //     type: QueryTypes.INSERT
         //   }
         // )
-// console.log(req.file.path)
+ console.log(req)
 
         const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`).toString("base64")
          console.log(imgData)
@@ -120,7 +120,7 @@ module.exports = {
 
   requestController: async (req, res) => {
     // /item/request (post)
-    
+    console.log(req)
     const { post_id, user_id } = req.body; 
     const requested = await db.sequelize.query(
       `Insert into requestlists (postId, userId, confirmation, createdAt) values(?,?,?,?)`, {
@@ -161,14 +161,13 @@ module.exports = {
   confirmationController: async (req, res) => {
 //이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
 //각 컨퍼메이션을 db에 업데이트만 해주면 끝
-    const accessTokenData = isAuthorized(req);
-console.log(accessTokenData)
-    if(accessTokenData){
 
-        const { confirmation, post_id, user_id } = req.body; 
+   
 
+        const { confirmation, post_id, userId } = req.body; 
+console.log(req.body)
         const confirm = await requestlist.findOne({
-          where: {postId:post_id, userId:user_id},
+          where: {postId:post_id, userId:userId},
           // include: [{
           //   model: post,
           //   attributes: ['id']
@@ -185,7 +184,7 @@ console.log(accessTokenData)
           [Op.and]: {
             postId: post_id,
             userId: {
-              [Op.ne]: user_id,
+              [Op.ne]: userId,
             },
              
           }
@@ -194,7 +193,7 @@ console.log(accessTokenData)
         res.status(200).send
       }
       res.status(200).send("응답을 보냈습니다")
-    }
+    
   },
 
 
