@@ -10,7 +10,7 @@ router.post('/signup', controller.signupController);
 router.get('/request', controller.requestController);
 router.get('/requested', controller.requestedController);
 router.put('/alter', controller.alterController);
-router.get('/refreshToken', controller.refreshController);
+router.get('/refreshtoken', controller.refreshController);
 
 
 module.exports = router;
