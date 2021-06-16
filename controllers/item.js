@@ -17,7 +17,8 @@ require("dotenv").config();
   resendAccessToken,
   checkRefeshToken
   
-} =require('./tokenMethod')
+} =require('./tokenMethod');
+const { request } = require('express');
 
 module.exports = {
   
@@ -53,7 +54,7 @@ module.exports = {
         //     type: QueryTypes.INSERT
         //   }
         // )
-console.log(req.file.path)
+// console.log(req.file.path)
 
         const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`).toString("base64")
          console.log(imgData)
@@ -164,23 +165,35 @@ console.log(req.file.path)
 console.log(accessTokenData)
     if(accessTokenData){
 
-    const { confirmation, post_id, user_id } = req.body;
-    const confirm = await requestlist.findOne({
-      where: {postId:post_id, userId:user_id},
-      // include: [{
-      //   model: post,
-      //   attributes: ['id']
-      // }]
-    })
-if(!confirm){
-  res.status(402).send("신청되지 않은 품목입니다")
-}else{
-  confirm.confirmation = confirmation
+        const { confirmation, post_id, user_id } = req.body; 
 
-  await confirm.save()
+        const confirm = await requestlist.findOne({
+          where: {postId:post_id, userId:user_id},
+          // include: [{
+          //   model: post,
+          //   attributes: ['id']
+          // }]
+        })
 
-  res.status(200).send("응답을 보냈습니다")
-}
+    if(!confirm){
+      res.status(402).send("신청되지 않은 품목입니다")
+    }else{
+      confirm.confirmation = confirmation
+      await confirm.save();
+      await requestlist.destroy({
+        where: {
+          [Op.and]: {
+            postId: post_id,
+            userId: {
+              [Op.ne]: user_id,
+            },
+             
+          }
+        }
+      })
+        res.status(200).send
+      }
+      res.status(200).send("응답을 보냈습니다")
     }
   },
 

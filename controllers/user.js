@@ -133,7 +133,7 @@ const accessTokenData = isAuthorized(req)
 if(!accessTokenData){
 
   res.status(400).send("로그인을 해 주세요")
-}else if(acccessTokenData){
+}else if(accessTokenData){
 
   //쿠키에 담겨있는 토큰을 없애면 로그아웃 되는 거
   //req.headers["authorization"]에 들어있는 액세스 토큰
