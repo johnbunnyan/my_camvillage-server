@@ -28,8 +28,13 @@ if(!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)){
 cb(null, true)
 }
 
+const limits = {
+    fileSize : 30000
+}
+
 //upload 이게 찐 미들웨어 애가 다해먹고 위에 함수는 이 미들웨어를 위한 세팅역할
-const upload = multer({storage:_storage, fileFilter:imageFilter})
+const upload = multer({storage:_storage, fileFilter:imageFilter,limits: limits,
+})
 
 
 

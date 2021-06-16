@@ -65,7 +65,7 @@ module.exports = {
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
 
-      }).status(200).json({accessToken:accessToken, id, user_id, email,nickname, image,createdAt, updatedAt} )
+      }).status(200).json({accessToken:accessToken, id, user_id, email,nickname, user_image,createdAt, updatedAt} )
 
     }else{
       res.status(500).send("err");
@@ -499,7 +499,8 @@ userInfo.user_image=imgData
 //
 
 await userInfo.save()
-
+console.log(userInfo.dataValues.user_image)
+//놀랍게도 db에는 잘려서 들어가고 여기 이미지는 db들어가기 전에 잘리기 전 이미지상태
 res.status(200).send({
   id:userInfo.dataValues.id, 
   user_id:userInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?

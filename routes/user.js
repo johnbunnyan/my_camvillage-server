@@ -58,8 +58,8 @@ router.post('/signup', controller.signupController);
 //router.get('/item', controller.itemController);
 router.get('/request', controller.requestController);
 router.get('/requested', controller.requestedController);
-router.put('/alter', controller.alterController);
-router.get('/refreshToken', controller.refreshController);
+router.put('/alter',   upload.single('user_image'),controller.alterController);
+router.get('/refreshtoken', controller.refreshController);
 
 
 
