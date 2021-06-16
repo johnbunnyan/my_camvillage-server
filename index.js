@@ -25,7 +25,7 @@ app.use(cors({
   methods: ['GET, POST, OPTIONS, PUT'],
   credentials: true
 }));
-
+app.use('/uploads', express.static('uploads'))
 app.use('/', indexRouter);
 app.use('/user', userRouter);
 app.use('/item', itemRouter);
