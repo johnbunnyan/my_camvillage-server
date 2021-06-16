@@ -14,7 +14,8 @@ require("dotenv").config();
   resendAccessToken,
   checkRefeshToken
   
-} =require('./tokenMethod')
+} =require('./tokenMethod');
+const { request } = require('express');
 
 module.exports = {
   
@@ -193,7 +194,8 @@ module.exports = {
     console.log(accessTokenData)
         if(accessTokenData){
 
-        const { confirmation, post_id, user_id } = req.body;
+        const { confirmation, id, userId } = req.body; 
+
         const confirm = await requestlist.findOne({
           where: {postId:post_id, userId:user_id},
           // include: [{
@@ -201,17 +203,29 @@ module.exports = {
           //   attributes: ['id']
           // }]
         })
+
     if(!confirm){
       res.status(402).send("신청되지 않은 품목입니다")
     }else{
       confirm.confirmation = confirmation
-
-      await confirm.save()
-
+      await confirm.save();
+      await requestlist.destroy({
+        where: {
+          [Op.and]: {
+            post: id,
+            userId: {
+              [Op.ne]: userId,
+            },
+            confirmation: {
+              [Op.ne]: "1"
+            }  
+          }
+        }
+      })
+        res.status(200).send
+      }
       res.status(200).send("응답을 보냈습니다")
     }
-        }
-
   },
 
 
