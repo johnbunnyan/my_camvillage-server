@@ -7,6 +7,7 @@ const db = require('../models/index');
 require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
+ const fs = require('fs')
 
  const {isAuthorized,//토큰 있는지 없는지 확인
   generateAccessToken,
@@ -51,13 +52,20 @@ module.exports = {
         //   }
         // )
 
+        const imgData =fs.readFileSync(req.file.path).toString("base64")
+        // console.log(imgData)
+        //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
+      
+
+
         const submitPost = await post.create({
           title: title,
           category: category,
           description: description,
           brand: brand,
           price: price,
-          image: image,
+//image는 post에 base64형식으로 변환되서 저장되는 거 확인
+          image: imgData,
           createdAt: new Date()
         })
         const findUser = await user.findOne({

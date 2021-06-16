@@ -3,11 +3,11 @@
  require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
 
- //이미지 관련 모듈🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+ //이미지 관련 모듈
  const multer = require("multer");
 const upload = multer({dest:'uploads/'}) //자동으로 보관폴더 만들어줌
 const fs = require('fs')
-//🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+//
 
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
@@ -461,7 +461,7 @@ if(accessTokenData){
 
 
 
-  //이미지를 DB로 넣는 상황🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+  //이미지를 DB로 넣는 상황
 
 //1. url로 받는 경우
 //-> 이미지 이런식으로 올것 'http://t1.daumcdn.net/friends/prod/editor/dc8b3d02-a15a-4afa-a88b-989cf2a50476.jpg'
@@ -475,7 +475,7 @@ if(accessTokenData){
 //근데 우리는 url로 받기로 했으니 위 과정은 필요없음!!
 userInfo.user_image=imgData
 
-//🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+//
 
 await userInfo.save()
 
@@ -485,7 +485,7 @@ res.status(200).send({
   name:userInfo.dataValues.name,
   email:userInfo.dataValues.email,
   nickname:userInfo.dataValues.nickname,
-  user_image:userInfo.dataValues.user_image, //디폴트 이미지 저장 및 제공방법 고민하기
+  user_image:userInfo.dataValues.user_image, //base64를통해 데이터 손실없이 DB에 전송된 이미지 다시 꺼내서 전송
   createdAt:userInfo.dataValues.createdAt,
   updatedAt:userInfo.dataValues.updatedAt
 })

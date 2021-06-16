@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const controller = require('../controllers/user');
 
- //이미지 관련 모듈 및 설명🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+ //이미지 관련 모듈 
  const multer = require("multer");
  
  //아래 storage 보관장소에 대한 세팅(자동으로 보관폴더 만들어줌)
@@ -46,7 +46,7 @@ const fs = require('fs')
 //     size: 596308
 //   }
 
-//🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+//
 
 
 router.post('/login', controller.loginController);
