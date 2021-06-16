@@ -64,7 +64,9 @@ module.exports = {
       //res의 _header에 Set-Cookie키 안에 refreshToken들어감
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-      }).status(200).json({ accessToken:accessToken,id, user_id, name,email,nickname, user_image,createdAt, updatedAt} )
+
+      }).status(200).json({accessToken:accessToken, id, user_id, email,nickname, image,createdAt, updatedAt} )
+
     }else{
       res.status(500).send("err");
 
@@ -75,7 +77,40 @@ module.exports = {
 
 },
 
+  googleLoginController: async (req, res) => {
+    //  user/login/google (post)
+    const { user_id, nickname, email } = req.body;
+    const googleToken = req.header.authorization.split(' ')[1];
 
+    // db에 저장되어 있는지 조회
+    const googleInfo = await user.findOne({ 
+      where: {
+        user_id: user_id,
+        nickname: nickname,
+        email: email,
+        google: "1"  // users 테이블에 google 필드 추가 : "1"이면 구글로그인
+      }
+    })
+    //저장되어 있지 않다면 데이터를 users 테이블에 저장
+    if(!googleInfo){
+      const createInfo = await user.create({
+        user_id: user_id,
+        nickname: nickname,
+        email: email,
+        google: "1"
+      }) 
+      res.status(200).send(createInfo) 
+    }  
+    
+    if(googleInfo && googleToken){  
+      res.status(200).send(googleToken, googleInfo)
+      //refresh없음
+      //어차피 토큰이 자체 생성이냐 구글 생성이냐의 차이만 있지 저장되어 있는 곳은 일치하니 로그아웃 로직은 똑같이 적용
+      // 로그아웃시 headers.authorization의 토큰 삭제
+    } else {
+      res.status(500).send("err");
+    }
+  },
 
 logoutController: (req, res) => {
 
@@ -96,8 +131,10 @@ const accessTokenData = isAuthorized(req)
 //console.log(accessTokenData)
 
 if(!accessTokenData){
-  res.status(400).send( "로그인을 해 주세요" )
-}else if(accessTokenData){
+
+  res.status(400).send("로그인을 해 주세요")
+}else if(acccessTokenData){
+
   //쿠키에 담겨있는 토큰을 없애면 로그아웃 되는 거
   //req.headers["authorization"]에 들어있는 액세스 토큰
  //Set-Cookie에 들어있는 리프레쉬 토큰
@@ -108,7 +145,8 @@ if(!accessTokenData){
  //console.log(req)
   res.status(200).send("성공적으로 로그아웃 하였습니다") 
 
-}else{
+} else {
+
   res.status(500).send('err')
 }
 
@@ -195,26 +233,11 @@ res.cookie("refreshToken", refreshToken, {
 }else{
   res.status(500).send("err");
 }
+
+
   },
 
- 
-  // const itemInfo = await user.findAll({
-  //   include:{
-  //     model:post,
-  //     include:[{
-  //       model:tag
-  //     },{
-  //       model:category
-  //     }]
-  //   },
-  //   where:{user_id: user_id}
-  //  })
 
-
-  //내가 어떤 게시물에 신청을 한 것(상대방의 응답 표시해야 됨)
-  //requestlist에서 아이디 찾고,(id)
-  // 그 아이디와 연결된 post랑 confirm찾고 
-  // 그 포스트의 정보 찾고
   requestController: async (req, res) => {
   //   request: [
   //     {
@@ -305,139 +328,137 @@ else{
 //그 게시물id를 requestlists로 가져가서 해당되는 로우 있는지 확인하고 그 게시물 정보 가져오고
 //있으면 그 로우의 userId(신청한사람)유저아이디 가져오기
   requestedController: async (req, res) => {
+ const accessTokenData = isAuthorized(req);
 
+    if(accessTokenData){
+      const { user_id } = accessTokenData;
+  
+      //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
+    // const requestedInfo = await user.findAll(
+    //   {
+    //   include:{
+    //   model:post,
+    //   include:[{
+    //     model:requestlist, 
+    //     //attributes:['confirmation']
+    //     where: {
+    //       [Op.or]:[
+    //         {confirmation:'0'},
+    //         {confirmation:'1'},
+    //         {confirmation:'2'},
+    //       ]
+    //     }
+    //   }],
+    //    //through:'post_user'
+    //   },
+    //   where:{user_id: user_id}
+    //   }
+    //   )
+  
 
-  const accessTokenData = isAuthorized(req);
-
-  if(accessTokenData){
-    const { user_id } = accessTokenData;
-
-    //유저아이디로 먼저 해당하는 포스트 찾고 그 row의 포스트 정보 및 리퀘스트 조인테이블//////////////////////////////////////
-  // const requestedInfo = await user.findAll(
-  //   {
-  //   include:{
-  //   model:post,
-  //   include:[{
-  //     model:requestlist, 
-  //     //attributes:['confirmation']
-  //     where: {
-  //       [Op.or]:[
-  //         {confirmation:'0'},
-  //         {confirmation:'1'},
-  //         {confirmation:'2'},
-  //       ]
-  //     }
-  //   }],
-  //    //through:'post_user'
-  //   },
-  //   where:{user_id: user_id}
-  //   }
-  //   )
-
-  const requestedInfo = await user.findAll(
-    {
-    include:{
-    model:post,
-    include:[{
-      model:requestlist, 
-      attributes:['confirmation','postId','userId','createdAt','updatedAt','id'],
-      where: {
-        [Op.or]:[
-          {confirmation:'0'},
-          {confirmation:'1'},
-          {confirmation:'2'},
-        ]
+    const requestedInfo = await user.findAll(
+      {
+      include:{
+      model:post,
+      include:[{
+        model:requestlist, 
+        attributes:['confirmation','postId','userId','createdAt','updatedAt','id'],
+        where: {
+          [Op.or]:[
+            {confirmation:'0'},
+            {confirmation:'1'},
+            {confirmation:'2'},
+          ]
+        }
+      }],
+       //]through:'post_user'
+      },
+      where:{user_id: user_id}
       }
-    }],
-     //]through:'post_user'
-    },
-    where:{user_id: user_id}
+      )
+    
+      //ps.forEach(ps => console.log(ps.toJSON()))
+      //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
+    
+  //나는 여러 포스트를 가지고 있고 그 포스트마다 여러 사람이 신청했을 수 있다
+  
+  //1. 조건 
+  //requestedInfo[0].posts.dataValues.requestlists의 내용이 있는 것만
+  
+  
+  //2. 여러 포스트 배열          
+  //requestedInfo[0].posts 
+    //그럼 포스트 기준으로 다 뽑아서 배열 만들어 놓고, 그 배열을 또 map
+  //3. 여러 신청한 사람 배열(기준)
+  //requestedInfo[0].posts.dataValues.requestlists
+  
+  //배열 속에 배열이 있다는 것이 문제
+  
+  let box=[]
+  for(let i=0;i<requestedInfo[0].posts.length;i++){
+    for(let j=0;j<requestedInfo[0].posts[i].dataValues.requestlists.length;j++){
+      let obj={
+        
+        id: requestedInfo[0].id,
+        userId: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.userId , 
+        myId:user_id,
+        title: requestedInfo[0].posts[i].title,
+        image: requestedInfo[0].posts[i].image,
+        confirmation: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.confirmation, 
+        createdAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.createdAt,
+        updatedAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.updatedAt
     }
-    )
+    box.push(obj)
+    }
+  }
   
-    //ps.forEach(ps => console.log(ps.toJSON()))
-    //ps.forEach(ps => console.log(ps.posts[0].dataValues.tags))
   
-//나는 여러 포스트를 가지고 있고 그 포스트마다 여러 사람이 신청했을 수 있다
-
-//1. 조건 
-//requestedInfo[0].posts.dataValues.requestlists의 내용이 있는 것만
-
-
-//2. 여러 포스트 배열          
-//requestedInfo[0].posts 
-  //그럼 포스트 기준으로 다 뽑아서 배열 만들어 놓고, 그 배열을 또 map
-//3. 여러 신청한 사람 배열(기준)
-//requestedInfo[0].posts.dataValues.requestlists
-
-//배열 속에 배열이 있다는 것이 문제
-
-let box=[]
-for(let i=0;i<requestedInfo[0].posts.length;i++){
-  for(let j=0;j<requestedInfo[0].posts[i].dataValues.requestlists.length;j++){
-    let obj={
-      
-      id: requestedInfo[0].id,
-      userId: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.userId , 
-      myId:user_id,
-      title: requestedInfo[0].posts[i].title,
-      image: requestedInfo[0].posts[i].image,
-      confirmation: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.confirmation, 
-      createdAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.createdAt,
-      updatedAt: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.updatedAt
-  }
-  box.push(obj)
-  }
-}
-
-
-
-// const pacakage=requestedInfo[0].posts.map((el)=>{
-//   //console.log(el.dataValues.requestlists.length) 2,1
-//   for(let i=0;i<el.dataValues.requestlists.length;i++){
-//     return {
-      
-//               id: requestedInfo[0].id,
-//               //나중에 id를 userId로 바꿔야됨
-//               userId: el.dataValues.requestlists[i].dataValues.userId
-//               , 
-//               myId:user_id,
-//               title: el.title,
-//               image: el.image,
-//               confirmation: el.dataValues.requestlists[i].dataValues.confirmation, 
-//               createdAt: el.dataValues.requestlists[i].dataValues.createdAt,
-//               updatedAt: el.dataValues.requestlists[i].dataValues.updatedAt
-//           }
-
-//   }
-//           }
-//       )
-      
-
-
-      console.log(requestedInfo)
-      //console.log(box)
-
-
-
-
   
-    res.status(200).send({
-      request:box
-    })
-  }else if(!accessTokenData){
-    res.status(401).send("토큰이 만료되었습니다")
-  }
-  else{
-    res.status(500).send("err");
-  }
-    },
-
-
-
-
+  // const pacakage=requestedInfo[0].posts.map((el)=>{
+  //   //console.log(el.dataValues.requestlists.length) 2,1
+  //   for(let i=0;i<el.dataValues.requestlists.length;i++){
+  //     return {
+        
+  //               id: requestedInfo[0].id,
+  //               //나중에 id를 userId로 바꿔야됨
+  //               userId: el.dataValues.requestlists[i].dataValues.userId
+  //               , 
+  //               myId:user_id,
+  //               title: el.title,
+  //               image: el.image,
+  //               confirmation: el.dataValues.requestlists[i].dataValues.confirmation, 
+  //               createdAt: el.dataValues.requestlists[i].dataValues.createdAt,
+  //               updatedAt: el.dataValues.requestlists[i].dataValues.updatedAt
+  //           }
+  
+  //   }
+  //           }
+  //       )
+        
+  
+  
+        console.log(requestedInfo)
+        //console.log(box)
+  
+  
+  
+  
+    
+      res.status(200).send({
+        request:box
+      })
+    }else if(!accessTokenData){
+      res.status(401).send("토큰이 만료되었습니다")
+    }
+    else{
+      res.status(500).send("err");
+    }
+      },
+  
+  
+  
   alterController: async (req, res) => {
-console.log(req.file)
+    console.log(req.file)
 
     //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
@@ -503,76 +524,74 @@ else{
 
 
 
-
-
-  //////////////////리프레쉬 컨트롤러//////////////////////////
   refreshController: async (req, res) => {
-
-
         //토큰 있는지 확인
-    const accessTokenData = isAuthorized(req);
+        const accessTokenData = isAuthorized(req);
     
     
-    if(accessTokenData){
-      const { user_id } = accessTokenData;
-     
-      const userInfo = await user.findOne({
-        where : {user_id}
-      })
-      if(!userInfo){
-        res.status(400).send("유저정보가 없습니다" )
-      }else{
-   
-    res.status(200).send(userInfo)
-      }
-
-
-
-    }else if(!accessTokenData){
-      const refreshToken = req.headers.cookie.slice(13)
-      //console.log(req.headers.cookie.slice(13))
-
-      if (!refreshToken) {
-        return res.json({ data: null, message: '리프레쉬 토큰이 만료되었습니다' });
-      }else{
-
-        const refreshTokenData = checkRefeshToken(refreshToken);
-        if (!refreshTokenData) {
-          return res.json({
-            message: '유효하지 않는 리프레쉬 토큰입니다. 다시 로그인 해주세요.',
-          });
-        }
-      
-        const { user_id } = refreshTokenData;
-        user.findOne({ where: { user_id:user_id } })
-          .then((data) => {
-            if (!data) {
+        if(accessTokenData){
+          const { user_id } = accessTokenData;
+         
+          const userInfo = await user.findOne({
+            where : {user_id}
+          })
+          if(!userInfo){
+            res.status(400).send("유저정보가 없습니다" )
+          }else{
+       
+        res.status(200).send(userInfo)
+          }
+    
+    
+    
+        }else if(!accessTokenData){
+          const refreshToken = req.headers.cookie.slice(13)
+          //console.log(req.headers.cookie.slice(13))
+    
+          if (!refreshToken) {
+            return res.json({ data: null, message: '리프레쉬 토큰이 만료되었습니다' });
+          }else{
+    
+            const refreshTokenData = checkRefeshToken(refreshToken);
+            if (!refreshTokenData) {
               return res.json({
-                data: null,
-                message: 'refresh token has been tempered',
+                message: '유효하지 않는 리프레쉬 토큰입니다. 다시 로그인 해주세요.',
               });
             }
-            //delete data.dataValues.password;
-      //console.log(data.dataValues)
-            const newAccessToken = generateAccessToken(data.dataValues);
-            resendAccessToken(res, newAccessToken);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-
-
-
-
-      }
-
-     
-    }
-    else{
-      res.status(500).send("err");
-    }
+          
+            const { user_id } = refreshTokenData;
+            user.findOne({ where: { user_id:user_id } })
+              .then((data) => {
+                if (!data) {
+                  return res.json({
+                    data: null,
+                    message: 'refresh token has been tempered',
+                  });
+                }
+                //delete data.dataValues.password;
+          //console.log(data.dataValues)
+                const newAccessToken = generateAccessToken(data.dataValues);
+                resendAccessToken(res, newAccessToken);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
     
     
     
-      }
+    
+          }
+    
+         
+        }
+        else{
+          res.status(500).send("err");
+        }
+        
+        
+        
+  
+  }
+
+
 };
