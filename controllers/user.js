@@ -1,7 +1,13 @@
- //로그인이나 회원가입은 정상작동 포스트맨으로 확인
- //토큰 인증하는 부분에서 문제 생겨서 확인해야 됨
+
+ const { Op } = require("sequelize");
  require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
+
+ //이미지 관련 모듈🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
+ const multer = require("multer");
+const upload = multer({dest:'uploads/'}) //자동으로 보관폴더 만들어줌
+const fs = require('fs')
+//🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞🏞
 
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
 
@@ -11,7 +17,8 @@
   resendAccessToken,
   checkRefeshToken
   
-} =require('./tokenMethod')
+} =require('./tokenMethod');
+
 
 module.exports = {
   
@@ -49,20 +56,23 @@ module.exports = {
       //유저가 있으면(맞으면) 토큰도 같이 줘야됨
       //비밀번호는 안주는 게 낫지 않나?
       
-        const {id, user_id, email,nickname, image,createdAt, updatedAt} = userInfo
+        const {id, user_id, name,email,nickname, user_image,createdAt, updatedAt} = userInfo
       
-      const accessToken = generateAccessToken({id, user_id, email,nickname, image,createdAt, updatedAt})
-      const refreshToken = generateRefreshToken({id, user_id, email,nickname, image,createdAt, updatedAt})
-      
-      
+        const accessToken=generateAccessToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
+        const refreshToken =generateRefreshToken({id, user_id, name,email,nickname, user_image,createdAt, updatedAt})
+
       //res의 _header에 Set-Cookie키 안에 refreshToken들어감
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
+
       }).status(200).json({accessToken:accessToken, id, user_id, email,nickname, image,createdAt, updatedAt} )
+
     }else{
       res.status(500).send("err");
 
+
     }
+      //console.log(cookie)
      // console.log(cookie)
 
 },
@@ -103,7 +113,8 @@ module.exports = {
   },
 
 logoutController: (req, res) => {
-  //console.log(req.body)
+
+
 //post?
   //req:jwt(localstorage),,express-session(req.session.userid)
 //res
@@ -115,21 +126,27 @@ logoutController: (req, res) => {
  // localStorage 토큰 저장 시 클라이언트에서 localStorage에서 removeItem으로 삭제하면 됨
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
+//console.log(req)
 const accessTokenData = isAuthorized(req)
 //console.log(accessTokenData)
 
 if(!accessTokenData){
+
   res.status(400).send("로그인을 해 주세요")
 }else if(acccessTokenData){
+
   //쿠키에 담겨있는 토큰을 없애면 로그아웃 되는 거
   //req.headers["authorization"]에 들어있는 액세스 토큰
  //Set-Cookie에 들어있는 리프레쉬 토큰
+
 
   req.headers.authorization = '' //액세스 토큰 없애기
   res.clearCookie('refreshToken') //쿠키지워서 리프레쉬 토큰 없애기
  //console.log(req)
   res.status(200).send("성공적으로 로그아웃 하였습니다") 
+
 } else {
+
   res.status(500).send('err')
 }
 
@@ -181,41 +198,45 @@ else if(!userInfo){
   email: req.body.email, 
   password: req.body.password,
   nickname:req.body.nickname,
-  image:null,
-  name:req.body.name
+  user_image:req.body.user_image,
+  name:req.body.name,
+ 
 
 })
 //회원가입 정보 DB에 저장하면서 토큰 만들어 주기
 //console.log(saveInfo)
-      const {id, user_id, email,nickname, name,image,createdAt, updatedAt} = saveInfo
+const {id, user_id, name,email,nickname, user_image,createdAt, updatedAt} = saveInfo
       //console.log(nickname)
-      const accessToken = generateAccessToken({id, user_id, email,nickname, name,image,createdAt, updatedAt})
-      const refreshToken = generateRefreshToken({id, user_id, email,nickname, name,image,createdAt, updatedAt})
+      const accessToken = generateAccessToken({id, user_id, name,email,nickname,createdAt, updatedAt})//토큰에 이미지 넣으면 길이엄청길어짐
+      const refreshToken = generateRefreshToken({id, user_id, name,email,nickname,createdAt, updatedAt})
       //console.log(accessToken)
      //리프레쉬토큰 헤더에 넣고 바디에 유저 데이터랑 액세스토큰 넣기
+
 
 
 res.cookie("refreshToken", refreshToken, {
   httpOnly:true
 })
+
 .status(201).json({
   accessToken:accessToken,
   id:saveInfo.dataValues.id, 
   user_id:saveInfo.dataValues.user_id,//비밀번호 주는 것이 맞나?
+  name:saveInfo.dataValues.name,
   email:saveInfo.dataValues.email,
   nickname:saveInfo.dataValues.nickname,
-  image:saveInfo.dataValues.default_image, //디폴트 이미지 저장 및 제공방법 고민하기
+  user_image:saveInfo.dataValues.user_image, //디폴트 이미지 저장 및 제공방법 고민하기
   createdAt:saveInfo.dataValues.createdAt,
   updatedAt:saveInfo.dataValues.updatedAt
 })
 
 }else{
   res.status(500).send("err");
-
 }
 
 
   },
+
 
   requestController: async (req, res) => {
   //   request: [
@@ -307,7 +328,7 @@ else{
 //그 게시물id를 requestlists로 가져가서 해당되는 로우 있는지 확인하고 그 게시물 정보 가져오고
 //있으면 그 로우의 userId(신청한사람)유저아이디 가져오기
   requestedController: async (req, res) => {
-    const accessTokenData = isAuthorized(req);
+ const accessTokenData = isAuthorized(req);
 
     if(accessTokenData){
       const { user_id } = accessTokenData;
@@ -334,6 +355,7 @@ else{
     //   }
     //   )
   
+
     const requestedInfo = await user.findAll(
       {
       include:{
@@ -501,6 +523,7 @@ else{
   },
 
 
+
   refreshController: async (req, res) => {
         //토큰 있는지 확인
         const accessTokenData = isAuthorized(req);
@@ -569,5 +592,6 @@ else{
         
   
   }
+
 
 };

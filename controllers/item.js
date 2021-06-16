@@ -23,7 +23,7 @@ module.exports = {
     // /item/upload (post)
      const { user_id, title, category, description, brand, price, image, hashtag } = req.body;
     // const accessTokenData = isAuthorized(req);
-
+    console.log(req.body.user_id)
     // if(accessTokenData){
     //   const { user_id } = accessTokenData;
     
@@ -64,8 +64,10 @@ module.exports = {
         const findUser = await user.findOne({
           where: {
             user_id: user_id
+
           }  
         })  
+
         const submitTag = await tag.create({
           name: hashtag
         })
@@ -81,6 +83,7 @@ module.exports = {
             type: QueryTypes.INSERT
           }
         )
+
         //posts, users, tags 각각의 테이블에 데이터가 추가되지만 조인 관계가 설립 안 됨 (조인테이블 데이터 X)
         // const getPostId = submitPost.dataValues.id;
         // const getUserId = submitUser.dataValues.id;
@@ -94,6 +97,7 @@ module.exports = {
         //   postId: getPostId,
         //   tagId: getTagId
         // })
+
 
         if(submitPost && findUser && submitTag && submitPostUser && submitPostTag){
           const allPosts = await user.findOne({
@@ -133,17 +137,7 @@ module.exports = {
           } else {
             res.status(500).send('err')
           }
-    
-          // const data = await db.sequelize.query(
-          //   `select posts.id, posts.title, posts.category, posts.description,
-          //   posts.brand, posts.price, posts.image, users.nickname, users.user_image from posts, users
-          //   where posts.title like :searchWord`, {
-          //     type: QueryTypes.SELECT
-          //   }
-          // )
-        }  
-      //}  
-    //}
+        }
   },
   // imageController: async (req, res) => {
   //  const image = req.file
@@ -169,6 +163,7 @@ module.exports = {
       // }]
     })
 
+
     // const requested = await requestlist.create({
     //   postId: post_id,  // 클릭한 post의 id  (숫자)
     //   userId: user_id, // 신청한 사람의 아이디명 (string)
@@ -190,7 +185,9 @@ module.exports = {
       res.status(200).send(itemrequest)
     }
   },
+ 
   confirmationController: async (req, res) => {
+
     //이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
     //각 컨퍼메이션을 db에 업데이트만 해주면 끝
     const accessTokenData = isAuthorized(req);
@@ -229,8 +226,10 @@ module.exports = {
       }
       res.status(200).send("응답을 보냈습니다")
     }
-        
   },
+
+
+
 
   idController: async (req, res) => {
     // /item/:id (get)
@@ -243,6 +242,7 @@ module.exports = {
     //   if(!userInfo){
     //     res.status(400).send("토큰이 만료되었습니다" )
     //   } else {
+     
         const selectedPost = await post.findByPk(req.params.id, {
           include: [{
             model: user,
@@ -252,6 +252,7 @@ module.exports = {
             attributes: ['name']
           }]
         })
+
         if(!selectedPost){
           res.status(404).send("게시물을 찾을 수 없습니다")
         } else {

@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'postId'
       })
     }
+
   };
   requestlist.init({
     confirmation: DataTypes.STRING
