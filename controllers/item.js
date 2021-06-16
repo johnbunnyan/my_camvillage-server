@@ -71,8 +71,10 @@ module.exports = {
         const findUser = await user.findOne({
           where: {
             user_id: user_id
-          }
-        })
+
+          }  
+        })  
+
         const submitTag = await tag.create({
           name: hashtag
         })
@@ -88,6 +90,21 @@ module.exports = {
             type: QueryTypes.INSERT
           }
         )
+
+        //posts, users, tags 각각의 테이블에 데이터가 추가되지만 조인 관계가 설립 안 됨 (조인테이블 데이터 X)
+        // const getPostId = submitPost.dataValues.id;
+        // const getUserId = submitUser.dataValues.id;
+        // const getTagId = submitTag.dataValues.id;
+
+        // const submitPostUser = await post_user.create({
+        //   postId: getPostId,
+        //   userId: getUserId
+        // })
+        // const submitPostTag = await post_tag.create({
+        //   postId: getPostId,
+        //   tagId: getTagId
+        // })
+
 
         if(submitPost && findUser && submitTag && submitPostUser && submitPostTag){
           const allPosts = await user.findOne({
@@ -105,6 +122,22 @@ module.exports = {
               }
             },
           });
+          // const allPosts = await post.findOne({
+          //   include: [{
+          //     model: user,
+          //     attributes: ['nickname', 'user_image'],
+          //     through: 'post_user',
+          //     where: {
+          //       user_id: submitUser.dataValues.user_id
+          //     }
+          //   },{
+          //     model: tag,
+          //     attributes: ['name'],
+          //   }],
+          //   where: {
+          //     id : submitPost.dataValues.id
+          //   }
+          // });
 
           if(allPosts){
             res.status(200).send(allPosts)
@@ -113,6 +146,10 @@ module.exports = {
           }
         }
   },
+  // imageController: async (req, res) => {
+  //  const image = req.file
+  //  res.status(200).send(image)  
+  // },
 
   requestController: async (req, res) => {
     // /item/request (post)
@@ -132,6 +169,8 @@ module.exports = {
       //   attributes: ['id']
       // }]
     })
+
+
     // const requested = await requestlist.create({
     //   postId: post_id,  // 클릭한 post의 id  (숫자)
     //   userId: user_id, // 신청한 사람의 아이디명 (string)
@@ -155,30 +194,32 @@ module.exports = {
   },
  
   confirmationController: async (req, res) => {
-//이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
-//각 컨퍼메이션을 db에 업데이트만 해주면 끝
+
+    //이 컨트롤러는 해당 포스트의 주인이 0,1,2 중 하나를 눌렀을때 실행
+    //각 컨퍼메이션을 db에 업데이트만 해주면 끝
     const accessTokenData = isAuthorized(req);
-console.log(accessTokenData)
-    if(accessTokenData){
+    console.log(accessTokenData)
+        if(accessTokenData){
 
-    const { confirmation, post_id, user_id } = req.body;
-    const confirm = await requestlist.findOne({
-      where: {postId:post_id, userId:user_id},
-      // include: [{
-      //   model: post,
-      //   attributes: ['id']
-      // }]
-    })
-if(!confirm){
-  res.status(402).send("신청되지 않은 품목입니다")
-}else{
-  confirm.confirmation = confirmation
+        const { confirmation, post_id, user_id } = req.body;
+        const confirm = await requestlist.findOne({
+          where: {postId:post_id, userId:user_id},
+          // include: [{
+          //   model: post,
+          //   attributes: ['id']
+          // }]
+        })
+    if(!confirm){
+      res.status(402).send("신청되지 않은 품목입니다")
+    }else{
+      confirm.confirmation = confirmation
 
-  await confirm.save()
+      await confirm.save()
 
-  res.status(200).send("응답을 보냈습니다")
-}
+      res.status(200).send("응답을 보냈습니다")
     }
+        }
+
   },
 
 
