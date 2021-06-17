@@ -175,7 +175,7 @@ console.log(req.body)
           //   attributes: ['id']
           // }]
         })
-
+        console.log(confirm);
     if(!confirm){
       res.status(402).send("신청되지 않은 품목입니다")
     }else{
@@ -192,9 +192,8 @@ console.log(req.body)
           }
         }
       })
-        res.status(200).send
-      }
       res.status(200).send("응답을 보냈습니다")
+      }
     
   },
 
