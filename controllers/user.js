@@ -458,7 +458,7 @@ else{
   
   
   alterController: async (req, res) => {
-    console.log(req.file)
+    console.log(req)
 
     //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
@@ -491,7 +491,9 @@ if(accessTokenData){
 //2. 이미지채로 받는 경우
 //🏞일단은 서버폴더에 받아놓은 이미지를 db로 보내기 위해 해당 폴더에서 끄집어내는데 지금 blob형태를 base64형태로 바꾼다
 if(req.file){
-const imgData =fs.readFileSync(req.file.path).toString("base64")
+  //const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`)
+  const imgData=req.file.path
+  console.log(imgData)
 // console.log(imgData)
 //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
 //근데 우리는 url로 받기로 했으니 위 과정은 필요없음!!
