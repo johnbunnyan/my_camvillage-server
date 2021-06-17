@@ -65,7 +65,7 @@ module.exports = {
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
 
-      }).status(200).json({accessToken:accessToken, id, user_id, email,nickname, user_image,createdAt, updatedAt} )
+      }).status(200).json({accessToken:accessToken, id, user_id, email,nickname, name, user_image,createdAt, updatedAt} )
 
     }else{
       res.status(500).send("err");
@@ -126,9 +126,9 @@ logoutController: (req, res) => {
  // localStorage 토큰 저장 시 클라이언트에서 localStorage에서 removeItem으로 삭제하면 됨
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
-// console.log(req.body.headers)
-const accessTokenData = isAuthorized(req.body)
-// console.log(accessTokenData)
+console.log(req)
+const accessTokenData = isAuthorized(req)
+//console.log(accessTokenData)
 
 if(!accessTokenData){
 
@@ -182,7 +182,7 @@ signupController: async (req, res) => {
 //   res.status(422).send("insufficient parameters supplied")
 
 // }
-
+console.log(req)
 const userInfo = await user.findOne({
   where : {user_id: req.body.user_id}
 })
@@ -290,7 +290,7 @@ include:[{
 //공통된 것은 id밖에 없다
 //requestInfo 는 배열이니까 하나씩 뽑아내서 아래 형식으로 보내주면 됨
 
-
+console.log(requestInfo)
 
 const pacakage=requestInfo.map((el)=>{
 return {
@@ -458,7 +458,7 @@ else{
   
   
   alterController: async (req, res) => {
-    console.log(req.file)
+    console.log(req)
 
     //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
@@ -490,12 +490,15 @@ if(accessTokenData){
 
 //2. 이미지채로 받는 경우
 //🏞일단은 서버폴더에 받아놓은 이미지를 db로 보내기 위해 해당 폴더에서 끄집어내는데 지금 blob형태를 base64형태로 바꾼다
- const imgData =fs.readFileSync(req.file.path).toString("base64")
+if(req.file){
+  //const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`)
+  const imgData=req.file.path
+  console.log(imgData)
 // console.log(imgData)
 //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
 //근데 우리는 url로 받기로 했으니 위 과정은 필요없음!!
 userInfo.user_image=imgData
-
+}
 //
 
 await userInfo.save()
