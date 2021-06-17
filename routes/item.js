@@ -29,7 +29,7 @@ cb(null, true)
 }
 
 const limits = {
-    fileSize : 30000
+    fileSize : 100000
 }
 
 //upload 이게 찐 미들웨어 애가 다해먹고 위에 함수는 이 미들웨어를 위한 세팅역할

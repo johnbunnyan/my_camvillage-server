@@ -24,6 +24,7 @@ module.exports = {
   
   uploadController: async (req, res) => {
     // /item/upload (post)
+    console.log(req.body);
      const { user_id, title, category, description, brand, price, image, hashtag } = req.body;
     // const accessTokenData = isAuthorized(req);
     console.log(req.body.user_id)
@@ -173,7 +174,7 @@ console.log(req.body)
           //   attributes: ['id']
           // }]
         })
-
+        console.log(confirm);
     if(!confirm){
       res.status(402).send("신청되지 않은 품목입니다")
     }else{

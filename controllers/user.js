@@ -254,9 +254,9 @@ res.cookie("refreshToken", refreshToken, {
   //     },
   //     ...
   // ]
-
+console.log(req.headers)
 const accessTokenData = isAuthorized(req);
-
+console.log(req.body)
 if(accessTokenData){
   //const { user_id } = accessTokenData;
   const { user_id } = accessTokenData;
@@ -399,7 +399,7 @@ else{
     for(let j=0;j<requestedInfo[0].posts[i].dataValues.requestlists.length;j++){
       let obj={
         
-        id: requestedInfo[0].id,
+        id: requestedInfo[0].posts[i].id,
         userId: requestedInfo[0].posts[i].dataValues.requestlists[j].dataValues.userId , 
         myId:user_id,
         title: requestedInfo[0].posts[i].title,
@@ -466,7 +466,7 @@ const accessTokenData = isAuthorized(req);
 
 if(accessTokenData){
   const { user_id } = accessTokenData;
- 
+  console.log(req.body);
   const userInfo = await user.findOne({
     where : {user_id}
   })
