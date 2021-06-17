@@ -56,7 +56,7 @@ module.exports = {
         // )
  console.log(req)
 
-        const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`).toString("base64")
+        const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`)
          console.log(imgData)
         //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
       
@@ -69,7 +69,7 @@ module.exports = {
           brand: brand,
           price: price,
 //image는 post에 base64형식으로 변환되서 저장되는 거 확인
-          image: req.file.path,
+          image: imgData,
           createdAt: new Date()
         })
         const findUser = await user.findOne({
