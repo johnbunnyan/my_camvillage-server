@@ -77,40 +77,50 @@ module.exports = {
 
 },
 
-  googleLoginController: async (req, res) => {
-    //  user/login/google (post)
-    const { user_id, nickname, email } = req.body;
-    const googleToken = req.header.authorization.split(' ')[1];
+googleLoginController: async (req, res) => {
+  //  user/login/google (post)
+  const { user_id, nickname, email } = req.body;
+  const googleToken = isAuthorized(req);
 
-    // db에 저장되어 있는지 조회
-    const googleInfo = await user.findOne({ 
-      where: {
-        user_id: user_id,
-        nickname: nickname,
-        email: email,
-        google: "1"  // users 테이블에 google 필드 추가 : "1"이면 구글로그인
-      }
-    })
-    //저장되어 있지 않다면 데이터를 users 테이블에 저장
-    if(!googleInfo){
-      const createInfo = await user.create({
-        user_id: user_id,
-        nickname: nickname,
-        email: email,
-        google: "1"
-      }) 
-      res.status(200).send(createInfo) 
-    }  
-    
-    if(googleInfo && googleToken){  
-      res.status(200).send(googleToken, googleInfo)
-      //refresh없음
-      //어차피 토큰이 자체 생성이냐 구글 생성이냐의 차이만 있지 저장되어 있는 곳은 일치하니 로그아웃 로직은 똑같이 적용
-      // 로그아웃시 headers.authorization의 토큰 삭제
-    } else {
-      res.status(500).send("err");
+  // db에 저장되어 있는지 조회
+  const googleInfo = await user.findOne({ 
+    where: {
+      user_id: user_id,
+      nickname: nickname,
+      email: email,
+      google: "1"  // users 테이블에 google 필드 추가 : "1"이면 구글로그인
     }
-  },
+  })
+  //저장되어 있지 않다면 데이터를 users 테이블에 저장
+  if(!googleInfo){
+    const createInfo = await user.create({
+      user_id: user_id,
+      nickname: nickname,
+      email: email,
+      google: "1"
+    }) 
+    res.status(200).send(createInfo) 
+  }  
+  
+  if(googleInfo && googleToken){  
+
+      const accessToken=generateAccessToken({ user_id, nickname, email })
+      const refreshToken =generateRefreshToken({ user_id, nickname, email })
+
+    //res의 _header에 Set-Cookie키 안에 refreshToken들어감
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+
+    }).status(200).json({accessToken:accessToken,user_id, nickname, email } )
+
+  }else{
+    res.status(500).send("err");
+
+
+  }
+  
+}
+,
 
 logoutController: (req, res) => {
 
