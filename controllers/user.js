@@ -254,9 +254,9 @@ res.cookie("refreshToken", refreshToken, {
   //     },
   //     ...
   // ]
-
+console.log(req.headers)
 const accessTokenData = isAuthorized(req);
-
+console.log(req.body)
 if(accessTokenData){
   //const { user_id } = accessTokenData;
   const { user_id } = accessTokenData;
