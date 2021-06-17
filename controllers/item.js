@@ -56,7 +56,8 @@ module.exports = {
         // )
  console.log(req)
 
-        const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`)
+ const imgData=req.file.path
+        //const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`)
          console.log(imgData)
         //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
       
