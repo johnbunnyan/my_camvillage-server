@@ -27,7 +27,7 @@ module.exports = {
 
     //로그인 할 때 준 토큰이 있는지 없는지 확인할때 쓰는 메서드
     isAuthorized: (req) => {
-      console.log(req)
+      //console.log(req)
       
       //const authorization = req.body.headers["Authorization"];
       const authorization = req.headers["Authorization"] || req.headers["authorization"] ||req.body.headers.Authorization;

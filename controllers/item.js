@@ -62,7 +62,6 @@ module.exports = {
         //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
       
 
-
         const submitPost = await post.create({
           title: title,
           category: category,
@@ -190,10 +189,10 @@ console.log(req.body)
              
           }
         }
+        
       })
-        res.status(200).send
-      }
       res.status(200).send("응답을 보냈습니다")
+      }
     
   },
 
