@@ -8,7 +8,7 @@ require("dotenv").config();
  const { sign, verify } = require("jsonwebtoken");
  const { user,post, category, tag, index, requestlist } = require("../models"); // 생성한 테이블에서 필요한 모델을 가져온다
  const fs = require('fs')
- const sharp = require('sharp')
+
 
 
  const {isAuthorized,//토큰 있는지 없는지 확인

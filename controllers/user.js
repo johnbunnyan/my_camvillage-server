@@ -79,10 +79,14 @@ module.exports = {
 
 googleLoginController: async (req, res) => {
   //  user/login/google (post)
+  console.log(req)
   const { user_id, nickname, email } = req.body;
   const googleToken = isAuthorized(req);
 
-  // db에 저장되어 있는지 조회
+  console.log(googleToken)
+ console.log(googleToken)
+
+ // db에 저장되어 있는지 조회
   const googleInfo = await user.findOne({ 
     where: {
       user_id: user_id,
@@ -111,7 +115,7 @@ googleLoginController: async (req, res) => {
   }).status(200).send({accessToken:accessToken, user_id, nickname, email}) 
   }  
   
-  if(googleInfo && googleToken){  
+  else if(googleInfo && googleToken){  
 
       const accessToken=generateAccessToken({ user_id, nickname, email })
       const refreshToken =generateRefreshToken({ user_id, nickname, email })
