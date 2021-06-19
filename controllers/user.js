@@ -103,13 +103,22 @@ module.exports = {
     }  
     
     if(googleInfo && googleToken){  
-      res.status(200).send(googleToken, googleInfo)
-      //refresh없음
-      //어차피 토큰이 자체 생성이냐 구글 생성이냐의 차이만 있지 저장되어 있는 곳은 일치하니 로그아웃 로직은 똑같이 적용
-      // 로그아웃시 headers.authorization의 토큰 삭제
-    } else {
+
+const accessToken=generateAccessToken({ user_id, nickname, email })
+        const refreshToken =generateRefreshToken({ user_id, nickname, email })
+
+      //res의 _header에 Set-Cookie키 안에 refreshToken들어감
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+
+      }).status(200).json({accessToken:accessToken,user_id, nickname, email } )
+
+    }else{
       res.status(500).send("err");
+
+
     }
+    
   },
 
 logoutController: (req, res) => {
