@@ -21,16 +21,16 @@ const port = 4000;
 app.use(express.json()); //req.body 접근하게 해주는 미들웨어
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-  origin: 'https://localhost:3000',
-  methods: ['GET, POST, OPTIONS'],
+  origin: 'http://camvillageee.s3-website.ap-northeast-2.amazonaws.com',
+  methods: ['GET, POST, OPTIONS, PUT'],
   credentials: true
 }));
-
+app.use('/uploads', express.static('uploads'))
 app.use('/', indexRouter);
 app.use('/user', userRouter);
 app.use('/item', itemRouter);
 app.get('/main', controller.mainpageController);
-app.get('/search', controller.searchController);
+app.post('/search', controller.searchController);
 
 
 module.exports = app.listen(port, () => {

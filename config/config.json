@@ -1,9 +1,9 @@
 {
   "development": {
     "username": "admin",
-    "password": "devking1234",
-    "database": "campvillage",
-    "host": "campvillage.closjql9emea.us-east-2.rds.amazonaws.com",
+    "password": "12345678",
+    "database": "camvillagee",
+    "host": "camvillagee.cfyf9kcbpvvf.us-east-1.rds.amazonaws.com",
     "port": 13306,
     "dialect": "mysql"
   },

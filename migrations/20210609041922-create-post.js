@@ -1,6 +1,7 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
     await queryInterface.createTable('posts', {
       id: {
         allowNull: false,
@@ -9,6 +10,9 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       title: {
+        type: Sequelize.STRING
+      },
+      category: {
         type: Sequelize.STRING
       },
       description: {
@@ -21,7 +25,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       image: {
-        type: Sequelize.BLOB
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -31,9 +35,12 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    });
+    })
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
   },
   down: async (queryInterface, Sequelize) => {
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
     await queryInterface.dropTable('posts');
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
   }
 };
