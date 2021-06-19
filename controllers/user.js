@@ -77,51 +77,6 @@ module.exports = {
 
 },
 
-<<<<<<< HEAD
-  googleLoginController: async (req, res) => {
-    //  user/login/google (post)
-    const { user_id, nickname, email } = req.body;
-    const googleToken = req.header.authorization.split(' ')[1];
-
-    // db에 저장되어 있는지 조회
-    const googleInfo = await user.findOne({ 
-      where: {
-        user_id: user_id,
-        nickname: nickname,
-        email: email,
-        google: "1"  // users 테이블에 google 필드 추가 : "1"이면 구글로그인
-      }
-    })
-    //저장되어 있지 않다면 데이터를 users 테이블에 저장
-    if(!googleInfo){
-      const createInfo = await user.create({
-        user_id: user_id,
-        nickname: nickname,
-        email: email,
-        google: "1"
-      }) 
-      res.status(200).send(createInfo) 
-    }  
-    
-    if(googleInfo && googleToken){  
-
-const accessToken=generateAccessToken({ user_id, nickname, email })
-        const refreshToken =generateRefreshToken({ user_id, nickname, email })
-
-      //res의 _header에 Set-Cookie키 안에 refreshToken들어감
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-
-      }).status(200).json({accessToken:accessToken,user_id, nickname, email } )
-
-    }else{
-      res.status(500).send("err");
-
-
-    }
-    
-  },
-=======
 googleLoginController: async (req, res) => {
   //  user/login/google (post)
   const { user_id, nickname, email } = req.body;
@@ -142,9 +97,18 @@ googleLoginController: async (req, res) => {
       user_id: user_id,
       nickname: nickname,
       email: email,
-      google: "1"
+      google: 1
     }) 
-    res.status(200).send(createInfo) 
+
+
+    const accessToken=generateAccessToken({ user_id, nickname, email })
+    const refreshToken =generateRefreshToken({ user_id, nickname, email })
+
+  //res의 _header에 Set-Cookie키 안에 refreshToken들어감
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+
+  }).status(200).send({accessToken:accessToken, user_id, nickname, email}) 
   }  
   
   if(googleInfo && googleToken){  
@@ -153,7 +117,7 @@ googleLoginController: async (req, res) => {
       const refreshToken =generateRefreshToken({ user_id, nickname, email })
 
     //res의 _header에 Set-Cookie키 안에 refreshToken들어감
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("refreshToken", refcreshToken, {
       httpOnly: true,
 
     }).status(200).json({accessToken:accessToken,user_id, nickname, email } )
@@ -166,7 +130,6 @@ googleLoginController: async (req, res) => {
   
 }
 ,
->>>>>>> 2e5d9ce217d940a201d8c644ba8658e1a895bfb2
 
 logoutController: (req, res) => {
 
