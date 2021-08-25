@@ -10,7 +10,7 @@ module.exports = {
         description: '좋은 텐트 있습니다',
 	      brand: '헬리녹스',
 	      price: 2000000,
-	      image: null,
+	      image: 'uploads/1629868617584-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date()
       },{
@@ -19,7 +19,7 @@ module.exports = {
         description: '모든 요리가 맛있어집니다',
 	      brand: '코오롱',
 	      price: 50000,
-	      image: null,
+	      image: 'uploads/1629868713594-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date()
       }, {
@@ -28,7 +28,7 @@ module.exports = {
         description: '감성캠핑용 텐트입니다',
         brand: '노르디스크',
         price: 2000000,
-        image: null,
+        image: 'uploads/1629868772290-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date()
       },{
@@ -37,7 +37,7 @@ module.exports = {
         description: '화력 대박입니다',
         brand: '힐맨',
         price: 100000,
-        image: null,
+        image: 'uploads/1629868844726-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date()
       },{
@@ -46,7 +46,7 @@ module.exports = {
         description: '은은한 분위기',
         brand: '노르디스크',
         price: 30000,
-        image: null,
+        image: 'uploads/1629868886042-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date()
       },

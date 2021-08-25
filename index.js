@@ -11,6 +11,7 @@ const controller = require('./controllers/others');
 
 require("./models");
 const sequelize = require('./models').sequelize;
+const morgan = require("morgan");
 const app = express();
 
 sequelize.sync();
@@ -19,6 +20,7 @@ const port = 4000;
 //라우팅 뒤에 있었는데 앞으로 끌고 왔습니다
 //express 미들웨어가 라우팅보다 와야 라우팅에서 적용됨
 app.use(express.json()); //req.body 접근하게 해주는 미들웨어
+app.use(logger('dev'))
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
   origin: 'http://localhost:3000',

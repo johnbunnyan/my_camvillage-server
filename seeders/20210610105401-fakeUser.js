@@ -10,7 +10,7 @@ module.exports = {
         name: 'michael',
         email: 'jordan@authstates.com',
         nickname: 'airjordan',
-        user_image: null,
+        user_image: 'uploads/1629868331225-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date(),
       },{
@@ -19,7 +19,7 @@ module.exports = {
         name: 'usain',
         email: 'bolt@authstates.com',
         nickname: 'bolt',
-        user_image: null,
+        user_image: 'uploads/1629868451229-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date(),
       },{
@@ -28,7 +28,7 @@ module.exports = {
         name: 'lee',
         email: 'faker@authstates.com',
         nickname: 'lol',
-        user_image: null,
+        user_image: 'uploads/1629868561572-bezkoder-image.jpg',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
