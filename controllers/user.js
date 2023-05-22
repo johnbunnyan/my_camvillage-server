@@ -48,7 +48,6 @@ module.exports = {
     })
     
 
-    console.log(userInfo)
 
       if(!userInfo){
         res.status(401).send("유저 정보가 정확하지 않거나 비밀번호가 틀렸습니다")
@@ -79,12 +78,12 @@ module.exports = {
 
 googleLoginController: async (req, res) => {
   //  user/login/google (post)
-  console.log(req)
+  // console.log(req)
   const { user_id, nickname, email } = req.body;
   const googleToken = isAuthorized(req);
 
-  console.log(googleToken)
- console.log(googleToken)
+//   console.log(googleToken)
+//  console.log(googleToken)
 
  // db에 저장되어 있는지 조회
   const googleInfo = await user.findOne({ 
@@ -149,7 +148,7 @@ logoutController: (req, res) => {
  // localStorage 토큰 저장 시 클라이언트에서 localStorage에서 removeItem으로 삭제하면 됨
 //토큰은 세션이 아니라 클라이언트의 로컬 스토리지에 저장되어 있음
 //로컬에서 파괴해도 되는지 안되는지 응답 분기만 
-console.log(req)
+// console.log(req)
 const accessTokenData = isAuthorized(req)
 //console.log(accessTokenData)
 
@@ -205,7 +204,7 @@ signupController: async (req, res) => {
 //   res.status(422).send("insufficient parameters supplied")
 
 // }
-console.log(req)
+// console.log(req)
 const userInfo = await user.findOne({
   where : {user_id: req.body.user_id}
 })
@@ -277,9 +276,9 @@ res.cookie("refreshToken", refreshToken, {
   //     },
   //     ...
   // ]
-console.log(req.headers)
+// console.log(req.headers)
 const accessTokenData = isAuthorized(req);
-console.log(req.body)
+// console.log(req.body)
 if(accessTokenData){
   //const { user_id } = accessTokenData;
   const { user_id } = accessTokenData;
@@ -313,7 +312,7 @@ include:[{
 //공통된 것은 id밖에 없다
 //requestInfo 는 배열이니까 하나씩 뽑아내서 아래 형식으로 보내주면 됨
 
-console.log(requestInfo)
+console.log(`🔴${requestInfo}`)
 
 const pacakage=requestInfo.map((el)=>{
 return {
@@ -385,7 +384,7 @@ else{
       model:post,
       include:[{
         model:requestlist, 
-        attributes:['confirmation','postId','userId','createdAt','updatedAt','id'],
+        attributes:['confirmation','postId','createdAt','updatedAt','userId'],
         where: {
           [Op.or]:[
             {confirmation:'0'},
@@ -481,7 +480,7 @@ else{
   
   
   alterController: async (req, res) => {
-    console.log(req)
+    // console.log(req)
 
     //토큰 있는지 확인
 const accessTokenData = isAuthorized(req);
@@ -489,7 +488,7 @@ const accessTokenData = isAuthorized(req);
 
 if(accessTokenData){
   const { user_id } = accessTokenData;
-  console.log(req.body);
+  // console.log(req.body);
   const userInfo = await user.findOne({
     where : {user_id}
   })
@@ -516,7 +515,7 @@ if(accessTokenData){
 if(req.file){
   //const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`)
   const imgData=req.file.path
-  console.log(imgData)
+  // console.log(imgData)
 // console.log(imgData)
 //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
 //근데 우리는 url로 받기로 했으니 위 과정은 필요없음!!
@@ -525,7 +524,7 @@ userInfo.user_image=imgData
 //
 
 await userInfo.save()
-console.log(userInfo.dataValues.user_image)
+// console.log(userInfo.dataValues.user_image)
 //놀랍게도 db에는 잘려서 들어가고 여기 이미지는 db들어가기 전에 잘리기 전 이미지상태
 res.status(200).send({
   id:userInfo.dataValues.id, 

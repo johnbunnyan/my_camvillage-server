@@ -24,10 +24,10 @@ module.exports = {
   
   uploadController: async (req, res) => {
     // /item/upload (post)
-    console.log(req.body);
+    // console.log(req.body);
      const { user_id, title, category, description, brand, price, image, hashtag } = req.body;
     // const accessTokenData = isAuthorized(req);
-    console.log(req.body.user_id)
+    // console.log(req.body.user_id)
     // if(accessTokenData){
     //   const { user_id } = accessTokenData;
     
@@ -54,12 +54,12 @@ module.exports = {
         //     replacements: [hashtag],
         //     type: QueryTypes.INSERT
         //   }
-        // )
- console.log(req)
+//         // )
+//  console.log(req)
 
  const imgData=req.file.path
         //const imgData =fs.readFileSync(`uploads/${req.file.path.split("uploads/")[1]}`)
-         console.log(imgData)
+        //  console.log(imgData)
         //이제 이놈을 db에 저장한다 => 아래 userInfo.user_image=imgData 이렇게 하면 됨
       
 
@@ -121,7 +121,7 @@ module.exports = {
 
   requestController: async (req, res) => {
     // /item/request (post)
-    console.log(req)
+    // console.log(req)
     const { post_id, user_id } = req.body; 
     const requested = await db.sequelize.query(
       `Insert into requestlists (postId, userId, confirmation, createdAt) values(?,?,?,?)`, {
@@ -154,7 +154,7 @@ module.exports = {
     if(!requested){
       res.status(500).send("err")
     } else {
-      console.log(requested)
+      // console.log(requested)
       res.status(200).send(itemrequest)
     }
   },
@@ -166,32 +166,27 @@ module.exports = {
    
 
         const { confirmation, post_id, userId } = req.body; 
-console.log(req.body)
         const confirm = await requestlist.findOne({
-          where: {postId:post_id, userId:userId},
+          where: {postId:post_id},
           // include: [{
           //   model: post,
           //   attributes: ['id']
           // }]
         })
-        console.log(confirm);
+        // console.log(confirm);
     if(!confirm){
       res.status(402).send("신청되지 않은 품목입니다")
     }else{
-      confirm.confirmation = confirmation
-      await confirm.save();
-      await requestlist.destroy({
-        where: {
-          [Op.and]: {
-            postId: post_id,
-            userId: {
-              [Op.ne]: userId,
-            },
-             
-          }
-        }
-        
-      })
+
+      await requestlist.update(
+        //update할 칼럼 정보
+        {
+          confirmation:confirmation
+        },
+        //where절 
+        {
+          where: {postId:post_id, userId:userId}
+        })
       res.status(200).send("응답을 보냈습니다")
       }
     
@@ -225,7 +220,7 @@ console.log(req.body)
         if(!selectedPost){
           res.status(404).send("게시물을 찾을 수 없습니다")
         } else {
-          console.log(selectedPost)
+          // console.log(selectedPost)
           res.status(200).send({
             id: selectedPost.dataValues.id,
             nickname: selectedPost.dataValues.users[0].nickname,

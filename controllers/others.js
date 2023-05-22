@@ -26,7 +26,7 @@ module.exports = {
     })
     .then(result => {
       res.status(200).send(result); // result 배열로 전송
-      console.log(result[0].dataValues.image)
+      // console.log(result[0].dataValues.image)
     })
     .catch(err => {
       res.status(400).send('error')
@@ -64,7 +64,7 @@ module.exports = {
           },
           order: [['createdAt', 'asc']]
         })
-        console.log(searchWord);
+        // console.log(searchWord);
         if(searchWord){
           res.status(200).send(searchWord) // searchWord는 배열로 들어감 -> 배열 안에 요소가 객체 (posts의 정보가 있음)
         } else {

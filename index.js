@@ -15,7 +15,7 @@ const morgan = require("morgan");
 const app = express();
 
 sequelize.sync();
-const port = 4000;
+const port = 2000;
 
 //라우팅 뒤에 있었는데 앞으로 끌고 왔습니다
 //express 미들웨어가 라우팅보다 와야 라우팅에서 적용됨
